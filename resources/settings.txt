@@ -1,0 +1,5 @@
+VolumeMusic{7}
+VolumeEat{0}
+VolumeClick{0}
+VolumeGameOver{0}
+Difficulty{2}
