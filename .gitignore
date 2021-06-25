@@ -35,6 +35,7 @@
 .vscode
 
 .DS_Store
-.dSYM
-.plist
+*.dSYM
+*.plist
 
+*.plist
