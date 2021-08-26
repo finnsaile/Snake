@@ -1,342 +1,265 @@
 #include "../headers/CSettings.hpp"
 
+#define LEFT_SIDE_X 300
+#define RIGHT_SIDE_X 700
+
 using namespace std;
+using namespace sf;
+
 CSettings::CSettings(bool initBool) : 
-sf::Drawable(),
-delBool(initBool)
+m_active_settings_b(initBool)
 {
-    int fst, lst;
-    string tempString;
-    ifstream input;
-    input.open(dataPath + "settings.txt");
-    
-    //get volumeMusic line
-    getline(input, tempString);
-    fst = tempString.find("{");
-    lst = tempString.find("}");
-    //safe value to volumeMusic
-    this->volumeMusic = stoi(tempString.substr(fst + 1, lst - fst));
-
-    //get volumeEat line
-    getline(input, tempString);
-    fst = tempString.find("{");
-    lst = tempString.find("}");
-    //safe value to volumeEat
-    this->volumeEat = stoi(tempString.substr(fst + 1, lst - fst));
-
-    //get volumeClick line
-    getline(input, tempString);
-    fst = tempString.find("{");
-    lst = tempString.find("}");
-    //safe value to volumeClick
-    this->volumeClick = stoi(tempString.substr(fst + 1, lst - fst));
-
-    //get volumeGameOver line
-    getline(input, tempString);
-    fst = tempString.find("{");
-    lst = tempString.find("}");
-    //safe value to volumeGameOver
-    this->volumeGameOver = stoi(tempString.substr(fst + 1, lst - fst));
-
-    //get difficulty line
-    getline(input, tempString);
-    fst = tempString.find("{");
-    lst = tempString.find("}");
-    //safe value to difficulty
-    this->difficulty = (Difficulty)stoi(tempString.substr(fst + 1, lst - fst));
-    
-    input.close();
-
-    if(initBool)
-    {
-        clickBuffer.loadFromFile(dataPath + "Sounds/ClickSound.wav");
-        clickSound.setBuffer(clickBuffer);
-        clickSound.setVolume(volumeClick);
-
-        initDifficultyEasy();
-        initDifficultyMedium();
-        initDifficultyHard();
-        initDifficultyExtreme();
-        initDifficultyImpossible();
-        initSliders();
-        initHeadline();
-        initMenu();
-    }
+    //read settings from file and write them to member variables
+    getSettings();
+    //initialise textures (only if object is an active settings instance)
+    initTextures();
 }
 
+//destructor
 CSettings::~CSettings()
-{
-    if(delBool)
-    {
-        delete sliderMusic;
-        delete sliderGameOver;
-        delete sliderEat;
-        delete sliderClick;
-    }
-}
+{}
 
-WindowInstance CSettings::settingsTick(sf::RenderWindow& renderWindow)
+WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
 {
     //wait Event to prevent unnecessary memory and cpu usage
-    sf::Event event;
-    while(renderWindow.waitEvent(event))
+    Event event;
+    while(renderWindow.pollEvent(event))
     {
         switch(event.type)
         {
-            case sf::Event::Closed:
+            case Event::Closed:
                 renderWindow.close(); break;
             
             //can navigate window with buttons
-            case sf::Event::KeyPressed:
+            case Event::KeyPressed:
                 switch(event.key.code)
                 {
-                    case sf::Keyboard::Escape: this->setSettings(); return Menu; break;
+                    case Keyboard::Escape: this->setSettings(); return Menu; break;
                     default: break;
                 }
                 break;
             
             //mouse press event
-            case sf::Event::MouseButtonPressed:
-                if(event.mouseButton.button == sf::Mouse::Left)
+            case Event::MouseButtonPressed:
+                if(event.mouseButton.button == Mouse::Left)
                 {
                     //get coordinates of mouse press
-                    sf::Vector2i cords = sf::Mouse::getPosition(renderWindow);
+                    Vector2i cords = Mouse::getPosition(renderWindow);
                     //check collition between mouse coordinates and playBound
-                    if(difficultyEasyBounds.contains(cords.x, cords.y)) 
+                    if(m_difficulty_easy_bounds.contains(cords.x, cords.y)) 
                     {
                         //play click sound, wait and return true(game gest started)
-                        clickSound.play(); 
-                        difficulty = Easy;
+                        m_click_sound.play(); 
+                        m_difficulty = Easy;
                     }
-                    else if(difficultyMediumBounds.contains(cords.x, cords.y)) 
+                    else if(m_difficulty_medium_bounds.contains(cords.x, cords.y)) 
                     {
                         //play click sound, wait and return true(game gest started)
-                        clickSound.play(); 
-                        difficulty = Medium;
+                        m_click_sound.play(); 
+                        m_difficulty = Medium;
                     }
-                    else if(difficultyHardBounds.contains(cords.x, cords.y)) 
+                    else if(m_difficulty_hard_bounds.contains(cords.x, cords.y)) 
                     {
                         //play click sound, wait and return true(game gest started)
-                        clickSound.play(); 
-                        difficulty = Hard;
+                        m_click_sound.play(); 
+                        m_difficulty = Hard;
                     }
-                    else if(difficultyExtremeBounds.contains(cords.x, cords.y)) 
+                    else if(m_difficulty_extreme_bounds.contains(cords.x, cords.y)) 
                     {
                         //play click sound, wait and return true(game gest started)
-                        clickSound.play(); 
-                        difficulty = Extreme;
+                        m_click_sound.play(); 
+                        m_difficulty = Extreme;
                     }
-                    else if(difficultyImpossibleBounds.contains(cords.x, cords.y)) 
+                    else if(m_difficulty_impossible_bounds.contains(cords.x, cords.y)) 
                     {
                         //play click sound, wait and return true(game gest started)
-                        clickSound.play(); 
-                        difficulty = Impossible;
+                        m_click_sound.play(); 
+                        m_difficulty = Impossible;
                     } 
-                    else if(sliderMusic->getSliderBounds().contains(cords.x, cords.y))
+                    else if(m_slider_music->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        while(sf::Mouse::isButtonPressed(sf::Mouse::Left))
-                        {   
-                                sliderMusic->moveSlider(sf::Mouse::getPosition(renderWindow).x);
-                                renderWindow.clear(sf::Color (169,169,169));
-                                renderWindow.draw(*this);
-                                renderWindow.display();
-                        }        
+                        m_active_slider = m_slider_music;          
                     }
-                    else if(sliderEat->getSliderBounds().contains(cords.x, cords.y))
+                    else if(m_slider_eat->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        while(sf::Mouse::isButtonPressed(sf::Mouse::Left))
-                        {   
-                                sliderEat->moveSlider(sf::Mouse::getPosition(renderWindow).x);
-                                renderWindow.clear(sf::Color (169,169,169));
-                                renderWindow.draw(*this);
-                                renderWindow.display();
-                        }
+                        m_active_slider = m_slider_eat;   
                             
                     }
-                    else if(sliderGameOver->getSliderBounds().contains(cords.x, cords.y))
+                    else if(m_slider_game_over->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        while(sf::Mouse::isButtonPressed(sf::Mouse::Left))
-                        {   
-                                sliderGameOver->moveSlider(sf::Mouse::getPosition(renderWindow).x);
-                                renderWindow.clear(sf::Color (169,169,169));
-                                renderWindow.draw(*this);
-                                renderWindow.display();
-                        }
-                            
+                        m_active_slider = m_slider_game_over;         
                     }
-                    else if(sliderClick->getSliderBounds().contains(cords.x, cords.y))
+                    else if(m_slider_click->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        while(sf::Mouse::isButtonPressed(sf::Mouse::Left))
-                        {   
-                                sliderClick->moveSlider(sf::Mouse::getPosition(renderWindow).x);
-                                renderWindow.clear(sf::Color (169,169,169));
-                                renderWindow.draw(*this);
-                                renderWindow.display();
-                        }
-                            
+                        m_active_slider = m_slider_click;     
                     }
-                    else if(menuBounds.contains(cords.x, cords.y)) 
+                    else if(m_menu_bounds.contains(cords.x, cords.y)) 
                     {
-                        //play click sound, wait and return true(game gest started)
-                        clickSound.play(); 
+                        //play click sound, wait and return true(game gets started)
+                        m_click_sound.play(); 
                         this->setSettings();
-                        sf::sleep(sf::milliseconds(300)); 
+                        sleep(milliseconds(LEFT_SIDE_X)); 
                         return Menu;
                     }
                 }
                 break;
+            case Event::MouseButtonReleased:
+                if(event.mouseButton.button == Mouse::Left)
+                    if(m_active_slider != nullptr)
+                        m_active_slider = nullptr;
+                break;
+
             default: break;
         }
+        moveSlider(renderWindow);
     }
     //default returns false so game doesn't start
     return Settings;
 }
 
-
+//write the settings to output file using the values from class members
 void CSettings::setSettings()
 {
     ofstream output;
     output.open(dataPath + "settings.txt");
-    output << "VolumeMusic{" << this->volumeMusic << "}\n";
-    output << "VolumeEat{" << this->volumeEat << "}\n";
-    output << "VolumeClick{" << this->volumeClick << "}\n";
-    output << "VolumeGameOver{" << this->volumeGameOver << "}\n";
-    output << "Difficulty{" << this->difficulty << "}\n";
+    output << "VolumeMusic{" << m_volume_music << "}\n";
+    output << "VolumeEat{" << m_volume_eat << "}\n";
+    output << "VolumeClick{" << m_volume_click << "}\n";
+    output << "VolumeGameOver{" << m_volume_game_over << "}\n";
+    output << "Difficulty{" << m_difficulty << "}\n";
     output.close();
 }
 
-int CSettings::getVolumeMusic()
+//retrieves settings from text file and assigns the values to the variables
+void CSettings::getSettings()
 {
-    return this->volumeMusic;
+    int arr[5], fst, lst;
+    string tempString;
+    ifstream input;
+    input.open(dataPath + "settings.txt");
+
+    //loop for retrieving values and writing them to temporary array
+    for(int i = 0; i < 5; i++)
+    {
+        getline(input, tempString);
+        //value is enclosed in curly brackets e.g. {20}
+        fst = tempString.find("{");
+        lst = tempString.find("}");
+        //create substring only containing the value, convert it and write it to array
+        arr[i] = stoi(tempString.substr(fst + 1, lst - fst));
+    }
+    //initialise all values with values from array
+    m_volume_music = arr[0];
+    m_volume_eat = arr[1];
+    m_volume_click = arr[2];
+    m_volume_game_over = arr[3];
+    m_difficulty = static_cast<Difficulty>(arr[4]);
+
+    input.close();
 }
 
-int CSettings::getVolumeEat()
+//moves the slider that is currently active to the x cursor position
+void CSettings::moveSlider(const RenderWindow& renderWindow)
 {
-    return this->volumeEat;
-}
-
-int CSettings::getVolumeClick()
-{
-    return this->volumeClick;
-}
-
-int CSettings::getVolumeGameOver()
-{
-    return this->volumeGameOver;
-}
-
-Difficulty CSettings::getDifficulty()
-{
-    return this->difficulty;
-}
-
-void CSettings::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    target.draw(difficultyEasySprite);
-    target.draw(difficultyMediumSprite);
-    target.draw(difficultyHardSprite);
-    target.draw(difficultyExtremeSprite);
-    target.draw(difficultyImpossibleSprite);
-    target.draw(*sliderMusic);
-    target.draw(*sliderEat);
-    target.draw(*sliderClick);
-    target.draw(*sliderGameOver);
-    target.draw(difficultySprite);
-    target.draw(volumeSprite);
-    target.draw(menuSprite);
-}
-
-void CSettings::initHeadline()
-{
-    this->difficultyTexture.loadFromFile(dataPath + "Settings/Difficulty.png");
-    this->volumeTexture.loadFromFile(dataPath + "Settings/Volume.png");
-    this->volumeSprite.setTexture(volumeTexture);
-    this->difficultySprite.setTexture(difficultyTexture);
-    this->difficultySprite.setOrigin(int(difficultySprite.getGlobalBounds().width/2), int(difficultySprite.getGlobalBounds().height/2));
-    this->volumeSprite.setOrigin(int(volumeSprite.getGlobalBounds().width/2), int(volumeSprite.getGlobalBounds().height/2));
-    this->volumeSprite.setPosition(700, 160);
-    this->difficultySprite.setPosition(300, 160);
-
+    if(m_active_slider != nullptr)
+    {
+        m_active_slider->moveSlider(Mouse::getPosition(renderWindow).x);
+    }
 }
 
 void CSettings::initSliders()
 {
-    sliderMusic = new CSlider(&volumeMusic, 700, 260, dataPath + "Slider/MusicVolume.png");
-    sliderEat = new CSlider(&volumeEat, 700, 380, dataPath + "Slider/EatVolume.png");
-    sliderGameOver = new CSlider(&volumeGameOver, 700, 500, dataPath + "Slider/LostVolume.png");
-    sliderClick = new CSlider(&volumeClick, 700, 620, dataPath + "Slider/ClickVolume.png");
+    m_slider_music = make_shared<CSlider>(&m_volume_music, RIGHT_SIDE_X, 260, dataPath + "Slider/MusicVolume.png");
+    m_slider_eat = make_shared<CSlider>(&m_volume_eat, RIGHT_SIDE_X, 380, dataPath + "Slider/EatVolume.png");
+    m_slider_game_over = make_shared<CSlider>(&m_volume_game_over, RIGHT_SIDE_X, 500, dataPath + "Slider/LostVolume.png");
+    m_slider_click = make_shared<CSlider>(&m_volume_click, RIGHT_SIDE_X, 620, dataPath + "Slider/ClickVolume.png");
 }
 
-//initialize quit button
-void CSettings::initDifficultyEasy()
+//initialises all textures if settings are active
+void CSettings::initTextures()
 {
-    difficultyEasyTexture.loadFromFile(dataPath + "Settings/Easy.png");
-    //sets quit texture, sets origin in center and sets position
-    this->difficultyEasySprite.setTexture(difficultyEasyTexture);
-    this->difficultyEasySprite.setOrigin(int(difficultyEasySprite.getGlobalBounds().width/2), int(difficultyEasySprite.getGlobalBounds().height/2));
-    this->difficultyEasySprite.setPosition(300, 260);
-    //get bounds for mouseclick event
-    this->difficultyEasyBounds = difficultyEasySprite.getGlobalBounds();
+    if(m_active_settings_b)
+    {
+        loadFiles();
+        m_difficulty_easy_bounds = initButton(m_difficulty_easy_sprite, m_difficulty_easy_texture, Vector2f(LEFT_SIDE_X, 260));
+        m_difficulty_medium_bounds = initButton(m_difficulty_medium_sprite, m_difficulty_medium_texture, Vector2f(LEFT_SIDE_X, 380));
+        m_difficulty_hard_bounds = initButton(m_difficulty_hard_sprite, m_difficulty_hard_texture, Vector2f(LEFT_SIDE_X, 500));
+        m_difficulty_extreme_bounds = initButton(m_difficulty_extreme_sprite, m_difficulty_extreme_texture, Vector2f(LEFT_SIDE_X, 620));
+        m_difficulty_impossible_bounds = initButton(m_difficulty_impossible_sprite, m_difficulty_impossible_texture, Vector2f(LEFT_SIDE_X, 740));
+        m_menu_bounds = initButton(m_menu_sprite, m_menu_texture, Vector2f(500, 880));
+        initButton(m_difficulty_sprite, m_difficulty_texture, Vector2f(LEFT_SIDE_X, 160));
+        initButton(m_volume_sprite, m_volume_texture, Vector2f(RIGHT_SIDE_X, 160));
+        //set sound source and volume for click sound
+        m_click_sound.setBuffer(m_click_buffer);
+        m_click_sound.setVolume(m_volume_click);
+        //initialise sliders
+        initSliders();
+    }
 }
 
-//initialize quit button
-void CSettings::initDifficultyMedium()
+//used to initialise a button with a texture, position and origin
+FloatRect CSettings::initButton(Sprite& sprite, Texture& texture, Vector2f pos)
 {
-    difficultyMediumTexture.loadFromFile(dataPath + "Settings/Medium.png");
-    //sets quit texture, sets origin in center and sets position
-    this->difficultyMediumSprite.setTexture(difficultyMediumTexture);
-    this->difficultyMediumSprite.setOrigin(int(difficultyMediumSprite.getGlobalBounds().width/2), int(difficultyMediumSprite.getGlobalBounds().height/2));
-    this->difficultyMediumSprite.setPosition(300, 380);
-    //get bounds for mouseclick event
-    this->difficultyMediumBounds = difficultyMediumSprite.getGlobalBounds();
+    sprite.setTexture(texture);
+    sprite.setOrigin(int(sprite.getGlobalBounds().width/2), int(sprite.getGlobalBounds().height/2));
+    sprite.setPosition(pos);
+
+    //returns global bounds for button click-detection
+    return sprite.getGlobalBounds();
 }
 
-//initialize quit button
-void CSettings::initDifficultyHard()
+//loads all assets from files
+void CSettings::loadFiles()
 {
-    difficultyHardTexture.loadFromFile(dataPath + "Settings/Hard.png");
-    //sets quit texture, sets origin in center and sets position
-    this->difficultyHardSprite.setTexture(difficultyHardTexture);
-    this->difficultyHardSprite.setOrigin(int(difficultyHardSprite.getGlobalBounds().width/2), int(difficultyHardSprite.getGlobalBounds().height/2));
-    this->difficultyHardSprite.setPosition(300, 500);
-    //get bounds for mouseclick event
-    this->difficultyHardBounds = difficultyHardSprite.getGlobalBounds();
+    m_click_buffer.loadFromFile(dataPath + "Sounds/m_click_sound.wav");
+    m_difficulty_easy_texture.loadFromFile(dataPath + "Settings/Easy.png");
+    m_difficulty_medium_texture.loadFromFile(dataPath + "Settings/Medium.png");
+    m_difficulty_hard_texture.loadFromFile(dataPath + "Settings/Hard.png");
+    m_difficulty_extreme_texture.loadFromFile(dataPath + "Settings/Extreme.png");
+    m_difficulty_impossible_texture.loadFromFile(dataPath + "Settings/Impossible.png");
+    m_difficulty_texture.loadFromFile(dataPath + "Settings/Difficulty.png");
+    m_volume_texture.loadFromFile(dataPath + "Settings/Volume.png");
+    m_menu_texture.loadFromFile(dataPath + "Settings/Menu.png");
 }
 
-//initialize quit button
-void CSettings::initDifficultyExtreme()
+int CSettings::getVolumeMusic() const 
 {
-    difficultyExtremeTexture.loadFromFile(dataPath + "Settings/Extreme.png");
-    //sets quit texture, sets origin in center and sets position
-    this->difficultyExtremeSprite.setTexture(difficultyExtremeTexture);
-    this->difficultyExtremeSprite.setOrigin(int(difficultyExtremeSprite.getGlobalBounds().width/2), int(difficultyExtremeSprite.getGlobalBounds().height/2));
-    this->difficultyExtremeSprite.setPosition(300, 620);
-    //get bounds for mouseclick event
-    this->difficultyExtremeBounds = difficultyExtremeSprite.getGlobalBounds();
+    return this->m_volume_music;
 }
 
-//initialize quit button
-void CSettings::initDifficultyImpossible()
+int CSettings::getVolumeEat() const
 {
-    difficultyImpossibleTexture.loadFromFile(dataPath + "Settings/Impossible.png");
-    //sets quit texture, sets origin in center and sets position
-    this->difficultyImpossibleSprite.setTexture(difficultyImpossibleTexture);
-    this->difficultyImpossibleSprite.setOrigin(int(difficultyImpossibleSprite.getGlobalBounds().width/2), int(difficultyImpossibleSprite.getGlobalBounds().height/2));
-    this->difficultyImpossibleSprite.setPosition(300, 740);
-    //get bounds for mouseclick event
-    this->difficultyImpossibleBounds = difficultyImpossibleSprite.getGlobalBounds();
+    return this->m_volume_eat;
 }
 
-//initialize quit button
-void CSettings::initMenu()
+int CSettings::getVolumeClick() const
 {
-    menuTexture.loadFromFile(dataPath + "Settings/Menu.png");
-    //sets quit texture, sets origin in center and sets position
-    this->menuSprite.setTexture(menuTexture);
-    this->menuSprite.setOrigin(int(menuSprite.getGlobalBounds().width/2), int(menuSprite.getGlobalBounds().height/2));
-    this->menuSprite.setPosition(500, 880);
-    //get bounds for mouseclick event
-    this->menuBounds = menuSprite.getGlobalBounds();
+    return this->m_volume_click;
 }
 
+int CSettings::getVolumeGameOver() const
+{
+    return this->m_volume_game_over;
+}
 
+Difficulty CSettings::getDifficulty() const
+{
+    return this->m_difficulty;
+}
+
+//draws all the sprites, buttons and sliders
+void CSettings::draw(RenderTarget& target, RenderStates states) const
+{
+    target.draw(m_difficulty_easy_sprite);
+    target.draw(m_difficulty_medium_sprite);
+    target.draw(m_difficulty_hard_sprite);
+    target.draw(m_difficulty_extreme_sprite);
+    target.draw(m_difficulty_impossible_sprite);
+    target.draw(*m_slider_music);
+    target.draw(*m_slider_eat);
+    target.draw(*m_slider_click);
+    target.draw(*m_slider_game_over);
+    target.draw(m_difficulty_sprite);
+    target.draw(m_volume_sprite);
+    target.draw(m_menu_sprite);
+}

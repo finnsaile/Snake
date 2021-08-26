@@ -11,57 +11,75 @@
 class CSettings : public sf::Drawable
 {
     public:
-        CSettings(bool);
-        ~CSettings();
+        CSettings(bool = false);
+        virtual ~CSettings();
         WindowInstance settingsTick(sf::RenderWindow&);
-        void setSettings();
-        int getVolumeMusic();
-        int getVolumeEat();
-        int getVolumeClick();
-        int getVolumeGameOver();
-        Difficulty getDifficulty();
+        int getVolumeMusic() const;
+        int getVolumeEat() const;
+        int getVolumeClick() const;
+        int getVolumeGameOver() const;
+        Difficulty getDifficulty() const;
     private: 
-        bool delBool;
-        void initDifficultyEasy();
-        void initDifficultyMedium();
-        void initDifficultyHard();
-        void initDifficultyExtreme();
-        void initDifficultyImpossible();
+        //functions to initialise sprites, buttons and sliders
+        sf::FloatRect initButton(sf::Sprite&, sf::Texture&, sf::Vector2f);
+        void loadFiles();
         void initSliders();
-        void initHeadline();
-        void initMenu();
-        int volumeMusic;
-        int volumeEat;
-        int volumeClick;
-        int volumeGameOver;
-        Difficulty difficulty;
-        sf::SoundBuffer clickBuffer;
-        sf::Sound clickSound;
-        sf::Sprite difficultyEasySprite;
-        sf::Sprite difficultyMediumSprite;
-        sf::Sprite difficultyHardSprite;
-        sf::Sprite difficultyExtremeSprite;
-        sf::Sprite difficultyImpossibleSprite;
-        sf::Sprite menuSprite;
-        sf::Sprite difficultySprite;
-        sf::Sprite volumeSprite;
-        sf::Texture difficultyTexture;
-        sf::Texture volumeTexture;
-        sf::Texture difficultyEasyTexture;
-        sf::Texture difficultyMediumTexture;
-        sf::Texture difficultyHardTexture;
-        sf::Texture difficultyExtremeTexture;
-        sf::Texture difficultyImpossibleTexture;
-        sf::Texture menuTexture;
-        sf::FloatRect difficultyEasyBounds;
-        sf::FloatRect difficultyMediumBounds;
-        sf::FloatRect difficultyHardBounds;
-        sf::FloatRect difficultyExtremeBounds;
-        sf::FloatRect difficultyImpossibleBounds;
-        sf::FloatRect menuBounds;
-        CSlider* sliderMusic;
-        CSlider* sliderEat;
-        CSlider* sliderClick;
-        CSlider* sliderGameOver;
+        void initTextures();
+
+        //read and write settings from/to file
+        void setSettings();
+        void getSettings();
+
+        //moves active slider
+        void moveSlider(const sf::RenderWindow&);
+        
+        //bool to check if this is an active settings object
+        bool m_active_settings_b;
+
+        //variables used to store settings
+        int m_volume_music;
+        int m_volume_eat;
+        int m_volume_click;
+        int m_volume_game_over;
+        Difficulty m_difficulty;
+
+        //sound variables
+        sf::SoundBuffer m_click_buffer;
+        sf::Sound m_click_sound;
+
+        //sprites for settings and buttons
+        sf::Sprite m_difficulty_easy_sprite;
+        sf::Sprite m_difficulty_medium_sprite;
+        sf::Sprite m_difficulty_hard_sprite;
+        sf::Sprite m_difficulty_extreme_sprite;
+        sf::Sprite m_difficulty_impossible_sprite;
+        sf::Sprite m_menu_sprite;
+        sf::Sprite m_difficulty_sprite;
+        sf::Sprite m_volume_sprite;
+
+        //textures for buttons and overall settings
+        sf::Texture m_difficulty_texture;
+        sf::Texture m_volume_texture;
+        sf::Texture m_difficulty_easy_texture;
+        sf::Texture m_difficulty_medium_texture;
+        sf::Texture m_difficulty_hard_texture;
+        sf::Texture m_difficulty_extreme_texture;
+        sf::Texture m_difficulty_impossible_texture;
+        sf::Texture m_menu_texture;
+
+        //rectangles to save button bounds
+        sf::FloatRect m_difficulty_easy_bounds;
+        sf::FloatRect m_difficulty_medium_bounds;
+        sf::FloatRect m_difficulty_hard_bounds;
+        sf::FloatRect m_difficulty_extreme_bounds;
+        sf::FloatRect m_difficulty_impossible_bounds;
+        sf::FloatRect m_menu_bounds;
+
+        //slider pointers
+        std::shared_ptr<CSlider> m_active_slider = nullptr;
+        std::shared_ptr<CSlider> m_slider_music;
+        std::shared_ptr<CSlider> m_slider_eat;
+        std::shared_ptr<CSlider> m_slider_click;
+        std::shared_ptr<CSlider> m_slider_game_over;
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
