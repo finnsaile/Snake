@@ -1,144 +1,137 @@
 #include "../headers/CWindow.hpp"
 
-//constructor initializes game/menuInstance with NULL and
+using namespace sf;
+
+//constructor initializes game/menuInstance with nullptr and
 //windowInstance with Menu so Menu is opend when object is created
-CWindow::CWindow() : 
-sf::Drawable(),
-settings(new CSettings(false)),
-gameInstance(NULL),
-menuInstance(NULL),
-breakMenuInstance(NULL),
-gameOverMenuInstance(NULL),
-settingsInstance(NULL),
-windowInstance(Menu),
-newInstance(Menu)
+CWindow::CWindow()
 {
     //initialize music for game
-    this->gameMusic.openFromFile(dataPath + "Sounds/bgMusic.wav");
-    this->gameMusic.setLoop(true);
+    m_game_music.openFromFile(dataPath + "Sounds/bgMusic.wav");
+    m_game_music.setLoop(true);
 }
 
 //window Tick takes renderWindow
-void CWindow::windowTick(sf::RenderWindow& renderWindow)
+void CWindow::windowTick(RenderWindow& renderWindow)
 {
-    //instance is changed when changeInstanceBool is true
+    //instance is changed when changeInstanceBool is true 
     this->changeInstance();
     //switch for Instance (either Menu or Game)
-    switch(this->windowInstance)
+    switch(m_window_instance)
     {
         case Menu: 
             //if no menuInstance exists
-            if(this->menuInstance == NULL) 
+            if(m_menu_instance == nullptr) 
             {
                 //delete gameInstance and create new Menu Instance
                 renderWindow.setKeyRepeatEnabled(false);
-                delete this->breakMenuInstance;
-                delete this->gameOverMenuInstance;
-                delete this->gameInstance;
-                delete this->settingsInstance;
-                this->settingsInstance = NULL;
-                this->breakMenuInstance = NULL;
-                this->gameOverMenuInstance = NULL;
-                this->gameInstance = NULL;
-                this->menuInstance = new CMenu; 
+                delete m_break_menu_instance;
+                delete m_game_over_menu_instance;
+                delete m_game_instance;
+                delete m_settings_instance;
+                m_settings_instance = nullptr;
+                m_break_menu_instance = nullptr;
+                m_game_over_menu_instance = nullptr;
+                m_game_instance = nullptr;
+                m_menu_instance = new CMenu; 
                 //stop game music
-                this->gameMusic.stop();
+                m_game_music.stop();
             }
             else
             {
                 //if menuInstance exists get bool from menuTick to determine whether or not to change the Instance
-                this->newInstance = this->menuInstance->menuTick(renderWindow);
+                m_new_instance = m_menu_instance->menuTick(renderWindow);
             }
             break;
 
         case Game: 
             //if no gameInstance exists
-            if(this->gameInstance == NULL) 
+            if(m_game_instance == nullptr) 
             {
                 //delete menuInstance and create new Game Instance
-                delete this->menuInstance;
-                if(gameOverMenuInstance != NULL) 
+                delete m_menu_instance;
+                if(m_game_over_menu_instance != nullptr) 
                 {
-                    delete this->gameOverMenuInstance;
-                    this->gameOverMenuInstance = NULL;
+                    delete m_game_over_menu_instance;
+                    m_game_over_menu_instance = nullptr;
                 }
-                this->menuInstance = NULL;
-                this->gameInstance = new CGame; 
+                m_menu_instance = nullptr;
+                m_game_instance = new CGame; 
                 //start playing gamemusic and set volume
-                this->gameMusic.setVolume(settings->getVolumeMusic());
-                this->gameMusic.play();
+                m_game_music.setVolume(m_settings->getVolumeMusic());
+                m_game_music.play();
             }
             else
             {
-                if(this->breakMenuInstance != NULL)
+                if(m_break_menu_instance != nullptr)
                 {
-                    delete this->breakMenuInstance;
-                    this->breakMenuInstance = NULL;
-                    this->gameMusic.play();
+                    delete m_break_menu_instance;
+                    m_break_menu_instance = nullptr;
+                    m_game_music.play();
                 }
-                if(this->gameOverMenuInstance != NULL)
+                if(m_game_over_menu_instance != nullptr)
                 {
-                    delete this->gameOverMenuInstance;
-                    this->gameOverMenuInstance = NULL;
-                    this->gameMusic.play();
+                    delete m_game_over_menu_instance;
+                    m_game_over_menu_instance = nullptr;
+                    m_game_music.play();
                 }
                 //if gameInstance exists get bool from gameTick to determine whether or not to change the Instance
-                this->newInstance = this->gameInstance->gameTick(renderWindow);
+                m_new_instance = m_game_instance->gameTick(renderWindow);
             }
             break;
         case Settings:
             //if no settingsInstance exists
-            if(this->settingsInstance == NULL) 
+            if(m_settings_instance == nullptr) 
             {
                 renderWindow.setKeyRepeatEnabled(true);
                 //delete menuInstance and create new Settings Instance
-                delete this->menuInstance;
-                this->menuInstance = NULL; 
-                this->settingsInstance = new CSettings(true);
+                delete m_menu_instance;
+                m_menu_instance = nullptr; 
+                m_settings_instance = new CSettings(true);
             }
             else
             {
                 //if menuInstance exists get bool from menuTick to determine whether or not to change the Instance
-                this->newInstance = this->settingsInstance->settingsTick(renderWindow);
-                if(newInstance != Settings)
+                m_new_instance = m_settings_instance->settingsTick(renderWindow);
+                if(m_new_instance != Settings)
                 {
-                    delete settings;
-                    settings = new CSettings(false);
+                    delete m_settings;
+                    m_settings = new CSettings(false);
                 }
             }
             break;
         
         case BreakMenu:
-            if(this->breakMenuInstance == NULL)
+            if(m_break_menu_instance == nullptr)
             {
-                this->breakMenuInstance = new CBreakMenu(gameInstance, 
+                m_break_menu_instance = new CBreakMenu(m_game_instance, 
                                                         dataPath + "GameMenu/BreakMenu.png", 
                                                         dataPath + "GameMenu/Resume.png", 
                                                         dataPath + "GameMenu/Menu.png");
-                this->gameMusic.stop();
+                m_game_music.stop();
             }
             else
             {
-                this->newInstance = this->breakMenuInstance->gameMenuTick(renderWindow);
+                m_new_instance = m_break_menu_instance->gameMenuTick(renderWindow);
             }
             break;
 
         case GameOverMenu: 
-            if(this->gameOverMenuInstance == NULL)
+            if(m_game_over_menu_instance == nullptr)
             {
-                this->gameOverMenuInstance = new CGameOverMenu(gameInstance, 
+                m_game_over_menu_instance = new CGameOverMenu(m_game_instance, 
                                                         dataPath + "GameMenu/GameOverMenu.png", 
                                                         dataPath + "GameMenu/PlayAgain.png", 
                                                         dataPath + "GameMenu/Menu.png");
-                this->gameMusic.stop();
+                m_game_music.stop();
             }
             else
             {
-                this->newInstance = this->gameOverMenuInstance->gameMenuTick(renderWindow);
-                if(this->newInstance == Game)
+                m_new_instance = m_game_over_menu_instance->gameMenuTick(renderWindow);
+                if(m_new_instance == Game)
                 {
-                    delete gameInstance;
-                    gameInstance = new CGame;
+                    delete m_game_instance;
+                    m_game_instance = new CGame;
                 }
             }
             break;
@@ -146,30 +139,21 @@ void CWindow::windowTick(sf::RenderWindow& renderWindow)
 }
 
 //draw function either draws Game or Menu
-void CWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void CWindow::draw(RenderTarget& target, RenderStates states) const
 {
-    switch(this->windowInstance)
+    switch(m_window_instance)
     {
-        case Menu: target.draw(*this->menuInstance); break;
-        case Game: target.draw(*this->gameInstance); break;
-        case BreakMenu: target.draw(*this->breakMenuInstance); break;
-        case GameOverMenu: target.draw(*this->gameOverMenuInstance); break;
-        case Settings: target.draw(*this->settingsInstance); break;
+        case Menu: target.draw(*m_menu_instance); break;
+        case Game: target.draw(*m_game_instance); break;
+        case BreakMenu: target.draw(*m_break_menu_instance); break;
+        case GameOverMenu: target.draw(*m_game_over_menu_instance); break;
+        case Settings: target.draw(*m_settings_instance); break;
     }
 }
 
 //changes Instance
 void CWindow::changeInstance()
 {
-    if (newInstance != windowInstance)
-    {
-        switch(newInstance)
-        {
-            case Menu: this->windowInstance = Menu; break;
-            case Game: this->windowInstance = Game; break;
-            case BreakMenu: this->windowInstance = BreakMenu; break;
-            case GameOverMenu: this->windowInstance = GameOverMenu; break;
-            case Settings: this->windowInstance = Settings; break;
-        }
-    }
+    if (m_new_instance != m_window_instance)
+        m_window_instance = m_new_instance;
 }
