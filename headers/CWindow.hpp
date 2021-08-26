@@ -7,7 +7,7 @@
 #include "CGameOverMenu.hpp"
 #include "CSettings.hpp"
 #include "headerEnum.hpp"
-#include "dataPath.hpp"
+#include "CResources.hpp"
 
 
 class CWindow : public sf::Drawable
@@ -18,6 +18,7 @@ class CWindow : public sf::Drawable
         void changeInstance();
         void playClick();
     private:
+        CResources& m_resource;
         sf::Music m_game_music;
         WindowInstance m_window_instance = Menu;
         WindowInstance m_new_instance = Menu;

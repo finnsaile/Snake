@@ -4,11 +4,10 @@ using namespace sf;
 
 //constructor initializes game/menuInstance with nullptr and
 //windowInstance with Menu so Menu is opend when object is created
-CWindow::CWindow()
+CWindow::CWindow() :
+m_resource(CResources::getInstance())
 {
-    //initialize music for game
-    m_game_music.openFromFile(dataPath + "Sounds/bgMusic.wav");
-    m_game_music.setLoop(true);
+    m_resource.m_game_music.setLoop(true);
 }
 
 //window Tick takes renderWindow
@@ -35,7 +34,7 @@ void CWindow::windowTick(RenderWindow& renderWindow)
                 m_game_instance = nullptr;
                 m_menu_instance = new CMenu; 
                 //stop game music
-                m_game_music.stop();
+                m_resource.m_game_music.stop();
             }
             else
             {
@@ -58,8 +57,8 @@ void CWindow::windowTick(RenderWindow& renderWindow)
                 m_menu_instance = nullptr;
                 m_game_instance = new CGame; 
                 //start playing gamemusic and set volume
-                m_game_music.setVolume(m_settings->getVolumeMusic());
-                m_game_music.play();
+                m_resource.m_game_music.setVolume(m_settings->getVolumeMusic());
+                m_resource.m_game_music.play();
             }
             else
             {
@@ -67,13 +66,13 @@ void CWindow::windowTick(RenderWindow& renderWindow)
                 {
                     delete m_break_menu_instance;
                     m_break_menu_instance = nullptr;
-                    m_game_music.play();
+                    m_resource.m_game_music.play();
                 }
                 if(m_game_over_menu_instance != nullptr)
                 {
                     delete m_game_over_menu_instance;
                     m_game_over_menu_instance = nullptr;
-                    m_game_music.play();
+                    m_resource.m_game_music.play();
                 }
                 //if gameInstance exists get bool from gameTick to determine whether or not to change the Instance
                 m_new_instance = m_game_instance->gameTick(renderWindow);
@@ -83,7 +82,7 @@ void CWindow::windowTick(RenderWindow& renderWindow)
             //if no settingsInstance exists
             if(m_settings_instance == nullptr) 
             {
-                renderWindow.setKeyRepeatEnabled(true);
+                renderWindow.setKeyRepeatEnabled(false);
                 //delete menuInstance and create new Settings Instance
                 delete m_menu_instance;
                 m_menu_instance = nullptr; 
@@ -105,10 +104,10 @@ void CWindow::windowTick(RenderWindow& renderWindow)
             if(m_break_menu_instance == nullptr)
             {
                 m_break_menu_instance = new CBreakMenu(m_game_instance, 
-                                                        dataPath + "GameMenu/BreakMenu.png", 
-                                                        dataPath + "GameMenu/Resume.png", 
-                                                        dataPath + "GameMenu/Menu.png");
-                m_game_music.stop();
+                                                        m_resource.m_game_menu_break_menu, 
+                                                        m_resource.m_game_menu_resume, 
+                                                        m_resource.m_game_menu_menu);
+                m_resource.m_game_music.stop();
             }
             else
             {
@@ -120,10 +119,10 @@ void CWindow::windowTick(RenderWindow& renderWindow)
             if(m_game_over_menu_instance == nullptr)
             {
                 m_game_over_menu_instance = new CGameOverMenu(m_game_instance, 
-                                                        dataPath + "GameMenu/GameOverMenu.png", 
-                                                        dataPath + "GameMenu/PlayAgain.png", 
-                                                        dataPath + "GameMenu/Menu.png");
-                m_game_music.stop();
+                                                        m_resource.m_game_menu_game_over, 
+                                                        m_resource.m_game_menu_play_again, 
+                                                        m_resource.m_game_menu_menu);
+                m_resource.m_game_music.stop();
             }
             else
             {
