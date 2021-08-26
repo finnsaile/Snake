@@ -1,82 +1,82 @@
 #include "../headers/CFood.hpp"
 
+using namespace sf;
+using namespace std;
+
 //food constructor
 CFood::CFood(Difficulty difficulty): 
-sf::Drawable(), 
-counter(0, 960, 35, false),
-settings(false),
-foodRect(sf::IntRect(0, 0, 40, 40)),
-highscore(initHighscore(difficulty), 40, 35, true),
-difficulty(difficulty)
+m_counter(0, 960, 35, false),
+m_highscore(initHighscore(difficulty), 40, 35, true),
+m_difficulty(difficulty),
+m_resource(CResources::getInstance())
 {
-    //load crunch sound and apple texture
-    crunchBuffer.loadFromFile(dataPath + "Sounds/Crunch.wav");
-    foodTexture.loadFromFile(dataPath + "Floor/Apple.png");
     //set attributes for crunch sound
-    crunch.setBuffer(crunchBuffer);
-    crunch.setVolume(settings.getVolumeEat());
+    m_crunch_sound.setBuffer(m_resource.m_crunch_buffer);
+    m_crunch_sound.setVolume(m_settings.getVolumeEat());
     //food gets spawned at random position in window
-    this->setRandCoordinates();
+    setRandCoordinates();
     //set attributes of food sprite
-    foodSprite.setTexture(foodTexture);
-    foodSprite.setTextureRect(foodRect);
+    m_food_sprite.setTexture(m_resource.m_food_texture);
 }
+
 CFood::~CFood()
 {
-    switch(difficulty)
+    //get new highscore
+    switch(m_difficulty)
     {
-        case Easy: highscoreEasy = highscore.getScore(); break;
-        case Medium: highscoreMedium = highscore.getScore(); break;
-        case Hard: highscoreHard = highscore.getScore(); break;
-        case Extreme: highscoreExtreme = highscore.getScore(); break;
-        case Impossible: highscoreImpossible = highscore.getScore(); break;
+        case Easy: m_highscore_easy = m_highscore.getScore(); break;
+        case Medium: m_highscore_medium = m_highscore.getScore(); break;
+        case Hard: m_highscore_hard = m_highscore.getScore(); break;
+        case Extreme: m_highscore_extreme = m_highscore.getScore(); break;
+        case Impossible: m_highscore_impossible = m_highscore.getScore(); break;
     }
 
-    std::ofstream output;
-    output.open(dataPath + "highscore.txt");
-    output << highscoreEasy << "\n";
-    output << highscoreMedium << "\n";
-    output << highscoreHard << "\n";
-    output << highscoreExtreme << "\n";
-    output << highscoreImpossible << "\n";
+    //write all highscores to file
+    ofstream output;
+    output.open(m_resource.DATA_PATH + "highscore.txt");
+    output << "HighscoreEasy{" << m_highscore_easy << "}\n";
+    output << "HighscoreMedium{" << m_highscore_medium << "}\n";
+    output << "HighscoreHard{" << m_highscore_hard << "}\n";
+    output << "HighscoreExtreme{" << m_highscore_extreme << "}\n";
+    output << "HighscoreImpossible{" << m_highscore_impossible << "}\n";
     output.close();
 }
 
 //simple draw function
-void CFood::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void CFood::draw(RenderTarget& target, RenderStates states) const
 {   
     //draws counter and food
-    target.draw(foodSprite);
-    target.draw(counter);
-    target.draw(highscore);
+    target.draw(m_food_sprite);
+    target.draw(m_counter);
+    target.draw(m_highscore);
 };
 
 //returns food bounds for collition check
-sf::FloatRect CFood::returnRect()
+FloatRect CFood::returnRect()
 {
-    return foodSprite.getGlobalBounds();
+    return m_food_sprite.getGlobalBounds();
 }
 
 //function is called when food gets eaten
 void CFood::gotEaten(CNode* head)
 {
     //crunch sound
-    crunch.play();
+    m_crunch_sound.play();
     //varibales for itteration and collition check
     CNode *temp = head;
     bool collition;
 
     //counter gets increased by one and new coordinates are set
-    if(counter.getScore() >= highscore.getScore())
+    if(m_counter.getScore() >= m_highscore.getScore())
     {
-        highscore.increaseScore(1);
+        m_highscore.increaseScore(1);
     }
-    counter.increaseScore(1);
-    this->setRandCoordinates();
+    m_counter.increaseScore(1);
+    setRandCoordinates();
     
     //food bound of new food location and body bound for snake
-    sf::FloatRect foodBound = this->returnRect();
-    sf::FloatRect bodyBound;
+    FloatRect foodBound = returnRect();
+    FloatRect bodyBound;
     
     //do while checks once if new food coordinates collide with snake(if yes while loop until not)
     do
@@ -92,8 +92,8 @@ void CFood::gotEaten(CNode* head)
             //when new food and node collide variable is set to true, new coordinates are set and while loop breaks
             if(foodBound.intersects(bodyBound)) 
             {
-                this->setRandCoordinates();
-                foodBound = this->returnRect();
+                setRandCoordinates();
+                foodBound = returnRect();
                 collition = true;
                 break;
             }    
@@ -102,51 +102,57 @@ void CFood::gotEaten(CNode* head)
         }
     //loop itterates as long as collition is true        
     }while(collition == true);
-    
 }
 
 //set coordinates for new food
 void CFood::setRandCoordinates()
 {
     //random coordinates get chosen
-    posX = (rand() % 941 + 39);
-    posY = (rand() % 941 + 39);
+    m_pos_x = (rand() % 941 + 39);
+    m_pos_y = (rand() % 941 + 39);
     //coordinates need to be increment of 40 to fit on grid
-    posX = posX - (posX % 40);
-    posY = posY - (posY % 40);
+    m_pos_x = m_pos_x - (m_pos_x % 40);
+    m_pos_y = m_pos_y - (m_pos_y % 40);
     //coordinates get passed to sprite
-    foodSprite.setPosition(posX, posY);
+    m_food_sprite.setPosition(m_pos_x, m_pos_y);
 }
 
+//initialise the highscore from text file
 unsigned int CFood::initHighscore(Difficulty difficulty)
 {
-    std::string highscoreStr;
+    int arr[5], fst, lst;
+    string tempString;
 
-    std::ifstream input;
-    input.open(dataPath + "highscore.txt");
+    ifstream input;
+    input.open(m_resource.DATA_PATH + "highscore.txt");
 
-    std::getline(input, highscoreStr);
-    highscoreEasy = stoi(highscoreStr);
+    //loop for retrieving values and writing them to temporary array
+    for(int i = 0; i < 5; i++)
+    {
+        getline(input, tempString);
+        //value is enclosed in curly brackets e.g. {20}
+        fst = tempString.find("{");
+        lst = tempString.find("}");
+        //create substring only containing the value, convert it and write it to array
+        arr[i] = stoi(tempString.substr(fst + 1, lst - fst));
+    }
     
-    std::getline(input, highscoreStr);
-    highscoreMedium = stoi(highscoreStr);
-    
-    std::getline(input, highscoreStr);
-    highscoreHard = stoi(highscoreStr);
-    
-    std::getline(input, highscoreStr);
-    highscoreExtreme = stoi(highscoreStr);
-    
-    std::getline(input, highscoreStr);
-    highscoreImpossible = stoi(highscoreStr);
+    //assign values from array to respective highscore variables
+    m_highscore_easy = arr[0];
+    m_highscore_medium = arr[1];
+    m_highscore_hard = arr[2];
+    m_highscore_extreme = arr[3];
+    m_highscore_impossible = arr[4];
 
     input.close();
+
+    //return difficulty value for highscore
     switch(difficulty)
     {
-        case Easy: return highscoreEasy;
-        case Medium: return highscoreMedium;
-        case Hard: return highscoreHard;
-        case Extreme: return highscoreExtreme;
-        case Impossible: return highscoreImpossible;
+        case Easy: return m_highscore_easy;
+        case Medium: return m_highscore_medium;
+        case Hard: return m_highscore_hard;
+        case Extreme: return m_highscore_extreme;
+        case Impossible: return m_highscore_impossible;
     }
 }
