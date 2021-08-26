@@ -75,6 +75,9 @@ DATA_PATH("/Users/finnsaile/Documents/GitHub/Snake/resources/")
 
     //fonts
     m_game_font.loadFromFile(DATA_PATH + "Fonts/ARCADE_R.TTF");
+
+    //icons
+    m_snake_icon.loadFromFile(DATA_PATH + "Icons/SnakeIcon.png");
 }
 
 CResources& CResources::getInstance()

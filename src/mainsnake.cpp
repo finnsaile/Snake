@@ -1,18 +1,20 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "../headers/CWindow.hpp"
+#include "../headers/CResources.hpp"
 
 #define WIN_SIZE 1000
 
 using namespace sf;
 
 int main(int argc, char* argv[])
-{
+{   
+    CResources& resource = CResources::getInstance();
     //initialize time 
     srand(time(NULL));
-
     //create window with VSync
     RenderWindow render_window(VideoMode(WIN_SIZE, WIN_SIZE), "Snake", Style::Titlebar | Style::Close);
+    render_window.setIcon(resource.m_snake_icon.getSize().x, resource.m_snake_icon.getSize().y, resource.m_snake_icon.getPixelsPtr());
     render_window.setVerticalSyncEnabled(false);
     render_window.setFramerateLimit(144);
     render_window.setKeyRepeatEnabled(false); 
