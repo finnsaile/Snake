@@ -1,16 +1,16 @@
 #include "../headers/CSnake.hpp"
 
+using namespace sf;
+using namespace std;
+
 //constructor takes new head position as argument 
 //and initializes new node as head, snakeState(direction) and changedState
-CSnake::CSnake(int initX, int initY): 
-sf::Drawable(),
-snakeState(W),
-head(new CNode(initY, initX, W)),
-changedThisTick(false)
+CSnake::CSnake(int init_x, int init_y): 
+head(new CNode(init_y, init_x, W))
 {  
     //tail = head (only 1 node exists)
-    this->head->prev = NULL;
-    this->tail = head;
+    head->prev = NULL;
+    tail = head;
 }
 
 CSnake::~CSnake()
@@ -25,31 +25,31 @@ CSnake::~CSnake()
 }
 
 //function to add head for movement/growth food pointer as arguments
-void CSnake::addHead(CFood& food, WindowInstance& newInstance)
+void CSnake::addHead(CFood& food, WindowInstance& new_instance)
 {
     //change texture of old head to normal body texture
 
-    this->head->changeText(this->snakeState, false);
+    head->changeTexture(m_snake_state, false);
 
-    int tempY, tempX;
-    switch(this->snakeState)
+    int temp_y, temp_x;
+    switch(m_snake_state)
     {
         //position of new head gets calculated using old heads position and moving direction
-        case W: tempY = this->head->m_node_pos_y - 40;  tempX = this->head->m_node_pos_x; break;
-        case D: tempY = this->head->m_node_pos_y;       tempX = this->head->m_node_pos_x + 40; break;
-        case S: tempY = this->head->m_node_pos_y + 40;  tempX = this->head->m_node_pos_x; break;
-        case A: tempY = this->head->m_node_pos_y;       tempX = this->head->m_node_pos_x - 40; break;
+        case W: temp_y = head->m_node_pos_y - 40;  temp_x = head->m_node_pos_x; break;
+        case D: temp_y = head->m_node_pos_y;       temp_x = head->m_node_pos_x + 40; break;
+        case S: temp_y = head->m_node_pos_y + 40;  temp_x = head->m_node_pos_x; break;
+        case A: temp_y = head->m_node_pos_y;       temp_x = head->m_node_pos_x - 40; break;
     }
     //new head gets created at calculated coordinates. All pointers are set to link the head to the list
-    this->head->prev = new CNode(tempY, tempX, snakeState);
-    this->head->prev->next = head;
-    this->head = head->prev;
-    this->head->prev = NULL;
+    head->prev = new CNode(temp_y, temp_x, m_snake_state);
+    head->prev->next = head;
+    head = head->prev;
+    head->prev = NULL;
 
     //bounds for head food and body to check for collition when creating the new head
-    sf::FloatRect foodBound = food.returnRect();
-    sf::FloatRect headBound = this->head->m_node.getGlobalBounds();
-    sf::FloatRect bodyBound;
+    FloatRect food_bound = food.returnRect();
+    FloatRect head_bound = head->m_node.getGlobalBounds();
+    FloatRect body_bound;
     
     //if the head collides with one of the body nodes true is returned
     CNode *temp = head;
@@ -59,15 +59,15 @@ void CSnake::addHead(CFood& food, WindowInstance& newInstance)
     }
 
     //if new head is created outside the window(player crashed into border) true is returned
-    if( this->head->m_node_pos_x < 0|
-        this->head->m_node_pos_x >= 1000|
-        this->head->m_node_pos_y < 0|
-        this->head->m_node_pos_y >= 1000) newInstance = GameOverMenu;
+    if( head->m_node_pos_x < 0|
+        head->m_node_pos_x >= 1000|
+        head->m_node_pos_y < 0|
+        head->m_node_pos_y >= 1000) new_instance = GameOverMenu;
 
     //if the head collides with the food 
-    if(headBound.intersects(foodBound))
+    if(head_bound.intersects(food_bound))
     {
-        temp->changeText(snakeState, true);
+        temp->changeTexture(m_snake_state, true);
         //food gets relocated
         food.gotEaten(head);
         
@@ -75,22 +75,22 @@ void CSnake::addHead(CFood& food, WindowInstance& newInstance)
         while(temp->next != NULL)
         {
             temp = temp->next;
-            bodyBound = temp->m_node.getGlobalBounds();
-            if(headBound.intersects(bodyBound)) newInstance = GameOverMenu;
+            body_bound = temp->m_node.getGlobalBounds();
+            if(head_bound.intersects(body_bound)) new_instance = GameOverMenu;
         }
     }
     else
     {
-        if(temp->prev->prev != NULL) temp->prev->changeText(snakeState, true);
+        if(temp->prev->prev != NULL) temp->prev->changeTexture(m_snake_state, true);
         //tail gests removed only when no food is eaten (snake grows)
-        this->removeTail();
+        removeTail();
 
         temp = head;
         while(temp->next != NULL)
         {
             temp = temp->next;
-            bodyBound = temp->m_node.getGlobalBounds();
-            if(headBound.intersects(bodyBound)) newInstance = GameOverMenu;
+            body_bound = temp->m_node.getGlobalBounds();
+            if(head_bound.intersects(body_bound)) new_instance = GameOverMenu;
         }
     }
 }
@@ -104,7 +104,7 @@ void CSnake::removeTail()
 }
 
 //draw function so snake can be drawn in window. Itterates through list and draws every node
-void CSnake::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void CSnake::draw(RenderTarget& target, RenderStates states) const
 {   
     //draw each nodes circle from back to front
     CNode *temp = tail;
@@ -118,26 +118,26 @@ void CSnake::draw(sf::RenderTarget& target, sf::RenderStates states) const
 //returns state(direction) of snake
 SnakeState CSnake::getState()
 {
-    return this->snakeState;
+    return m_snake_state;
 }
 
 //returns whether snake changed already in current tick
 bool CSnake::getChangedThisTick()
 {
-    return this->changedThisTick;
+    return m_changed_this_tick_b;
 }
 
 //sets new state(new direction) and sets changedState to true
-void CSnake::setState(SnakeState newState)
+void CSnake::setState(SnakeState new_state)
 {
-    this->snakeState = newState;
-    this->changedThisTick = true;
+    m_snake_state = new_state;
+    m_changed_this_tick_b = true;
 }
 
 //sets changedState to parameter
 void CSnake::setChangedThisTick(bool changed)
 {
-    this->changedThisTick = changed;
+    m_changed_this_tick_b = changed;
 }
 
 
