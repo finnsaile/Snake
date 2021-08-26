@@ -1,78 +1,66 @@
 #include "../headers/CMenu.hpp"
-#define hallo 4
-//constructor initializes 2 colors
+
+#define BUTTON_X 500
+
+using namespace sf;
+//constructor initializes 2 colors and all the textures
 CMenu::CMenu():
-sf::Drawable(),
-settings(false),
-myBlack(0, 0, 0, 200), 
-myGreen(0, 255, 0, 200)
+m_my_black(0, 0, 0, 200), 
+m_my_green(0, 255, 0, 200),
+m_resource(CResources::getInstance())
 {
-    //menu Font, png files for buttons and click sound gets imported
-    menuFont.loadFromFile(dataPath + "Fonts/ARCADE_R.TTF"); 
-    logoTexture.loadFromFile(dataPath + "Menu/SnakeLogo.png");
-    playTexture.loadFromFile(dataPath + "Menu/Play.png");
-    quitTexture.loadFromFile(dataPath + "Menu/Quit.png");
-    settingsTexture.loadFromFile(dataPath + "Menu/Settings.png");
-    clickBuffer.loadFromFile(dataPath + "Sounds/ClickSound.wav");
-    //clickSound gets initialized
-    clickSound.setBuffer(clickBuffer);
-    clickSound.setVolume(settings.getVolumeClick());
-    //logo, play and quit buttons get initialized
-    initLogo();
-    initPlay();
-    initQuit(); 
-    initSettings();
+    initTextures();
 }
 
 //menuTick function
-WindowInstance CMenu::menuTick(sf::RenderWindow& renderWindow)
+WindowInstance CMenu::menuTick(RenderWindow& renderWindow)
 {
     //wait Event to prevent unnecessary memory and cpu usage
-    sf::Event event;
+    Event event;
     while(renderWindow.waitEvent(event))
     {
         switch(event.type)
         {
-            case sf::Event::Closed:
+            case Event::Closed:
                 renderWindow.close(); break;
             
             //can navigate window with buttons
-            case sf::Event::KeyPressed:
+            case Event::KeyPressed:
                 switch(event.key.code)
                 {
-                    case sf::Keyboard::Space: return Settings; break;
-                    case sf::Keyboard::Escape:  renderWindow.close(); break;
+                    case Keyboard::Space: return Settings; break;
+                    case Keyboard::Escape:  renderWindow.close(); break;
                     default: break;
                 }
                 break;
             
             //mouse press event
-            case sf::Event::MouseButtonPressed:
-                if(event.mouseButton.button == sf::Mouse::Left)
+            case Event::MouseButtonPressed:
+                if(event.mouseButton.button == Mouse::Left)
                 {
                     //get coordinates of mouse press
-                    sf::Vector2i cords = sf::Mouse::getPosition(renderWindow);
-                    //check collition between mouse coordinates and playBound
-                    if(playBound.contains(cords.x, cords.y)) 
+                    Vector2i cords = Mouse::getPosition(renderWindow);
+                    //check collition between mouse coordinates and m_play_bound
+                    if(m_play_bound.contains(cords.x, cords.y)) 
                     {
                         //play click sound, wait and return true(game gest started)
-                        clickSound.play(); 
-                        sf::sleep(sf::milliseconds(300)); 
+                        m_click_sound.play(); 
+                        sleep(milliseconds(300)); 
                         return Game;
                     }
-                    //check collition between mouse coordinates and quitBound
-                    else if(quitBound.contains(cords.x, cords.y)) 
+                    //check collition between mouse coordinates and m_quit_bound
+                    else if(m_quit_bound.contains(cords.x, cords.y)) 
                     {
                         //play click sound wait and close window
-                        clickSound.play(); 
-                        sf::sleep(sf::milliseconds(300)); 
+                        m_click_sound.play(); 
+                        sleep(milliseconds(300)); 
                         renderWindow.close();  
                     }  
-                    else if(settingsBound.contains(cords.x, cords.y)) 
+                    else if(m_settings_bound.contains(cords.x, cords.y)) 
                     {
                         //play click sound wait and close window
-                        clickSound.play(); 
-                        sf::sleep(sf::milliseconds(300)); 
+                        m_click_sound.play(); 
+                        sleep(milliseconds(300)); 
                         return Settings;  
                     }  
                 }
@@ -84,53 +72,33 @@ WindowInstance CMenu::menuTick(sf::RenderWindow& renderWindow)
     return Menu;
 }
 
+void CMenu::initTextures()
+{
+    initButton(m_logo_sprite, m_resource.m_logo_texture, Vector2f(BUTTON_X, 300));
+    m_play_bound = initButton(m_play_sprite, m_resource.m_play_texture, Vector2f(BUTTON_X, 500));
+    m_settings_bound = initButton(m_settings_sprite, m_resource.m_settings_texture, Vector2f(BUTTON_X, 680));
+    m_quit_bound = initButton(m_quit_sprite, m_resource.m_quit_texture, Vector2f(BUTTON_X, 860));
+
+    m_click_sound.setBuffer(m_resource.m_click_buffer);
+    m_click_sound.setVolume(m_settings.getVolumeClick());
+}
+
+//used to initialise a button with a texture, position and origin
+FloatRect CMenu::initButton(Sprite& sprite, Texture& texture, Vector2f pos)
+{
+    sprite.setTexture(texture);
+    sprite.setOrigin(static_cast<int>(sprite.getGlobalBounds().width/2), static_cast<int>(sprite.getGlobalBounds().height/2));
+    sprite.setPosition(pos);
+
+    //returns global bounds for button click-detection
+    return sprite.getGlobalBounds();
+}
+
 //draw dunction draws all 3 logos/buttons
-void CMenu::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void CMenu::draw(RenderTarget& target, RenderStates states) const
 {
-    target.draw(logo);
-    target.draw(play);
-    target.draw(quit);
-    target.draw(settingsSprite);
-}
-
-//initializes logo
-void CMenu::initLogo()
-{
-    //sets logo texture, sets origin in center and sets position
-    this->logo.setTexture(logoTexture);
-    this->logo.setOrigin(int(logo.getGlobalBounds().width/2), int(logo.getGlobalBounds().height/2));
-    this->logo.setPosition(500, 300);
-}
-
-//initialize play button
-void CMenu::initPlay()
-{
-    //sets play texture, sets origin in center and sets position
-    this->play.setTexture(playTexture);
-    this->play.setOrigin(int(play.getGlobalBounds().width/2), int(play.getGlobalBounds().height/2));
-    this->play.setPosition(500, 500);
-    //get bounds for mouseclick event
-    this->playBound = play.getGlobalBounds();
-}
-
-//initialize quit button
-void CMenu::initSettings()
-{
-    //sets quit texture, sets origin in center and sets position
-    this->settingsSprite.setTexture(settingsTexture);
-    this->settingsSprite.setOrigin(int(settingsSprite.getGlobalBounds().width/2), int(settingsSprite.getGlobalBounds().height/2));
-    this->settingsSprite.setPosition(500, 680);
-    //get bounds for mouseclick event
-    this->settingsBound = settingsSprite.getGlobalBounds();
-}
-
-//initialize quit button
-void CMenu::initQuit()
-{
-    //sets quit texture, sets origin in center and sets position
-    this->quit.setTexture(quitTexture);
-    this->quit.setOrigin(int(quit.getGlobalBounds().width/2), int(quit.getGlobalBounds().height/2));
-    this->quit.setPosition(500, 860);
-    //get bounds for mouseclick event
-    this->quitBound = quit.getGlobalBounds();
+    target.draw(m_logo_sprite);
+    target.draw(m_play_sprite);
+    target.draw(m_quit_sprite);
+    target.draw(m_settings_sprite);
 }

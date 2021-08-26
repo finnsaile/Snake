@@ -1,7 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <string>
-#include "dataPath.hpp"
+#include "CResources.hpp"
 
 class CCounter: public sf::Drawable
 {
@@ -10,15 +10,19 @@ class CCounter: public sf::Drawable
         void increaseScore(unsigned int);
         unsigned int getScore();
     private:
-        unsigned int score;
-        sf::Font scoreFont;
-        sf::Text scoreText;
-        sf::Color myGreen;
-        sf::Color myBlack;
-        sf::Color myRed;
-        bool highscoreCounter;
-        int posX;
-        int posY;
+        unsigned int m_score;
+        int m_pos_x;
+        int m_pos_y;
+        CResources& m_resource;
+
+        sf::Text m_score_text;
+
+        sf::Color m_green;
+        sf::Color m_black;
+        sf::Color m_red;
+
+        bool m_highscore_counter;
+
         void setCounterAttributes();
         void setCounterPosition();
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;

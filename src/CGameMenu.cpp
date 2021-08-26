@@ -1,63 +1,69 @@
 #include "../headers/CGameMenu.hpp"
 
-CGameMenu::CGameMenu(CGame* game, std::string menuTexturePath, std::string button1TexturePath, std::string button2TexturePath, int button1Y, int button2Y, int gameMenuY) : 
-sf::Drawable(),
-gameInstance(game),
-settings(false)
+#define POSITION_Y 500
+
+using namespace sf;
+using namespace std;
+
+CGameMenu::CGameMenu(CGame* game, Texture& menu_texture, Texture& button_one_texture, Texture& button_two_texture, int button_one_y, int button_two_y, int menu_y) : 
+m_game_instance(game),
+m_resource(CResources::getInstance())
 {   
-    initGameMenu(menuTexturePath, gameMenuY);
-    initButton1(button1TexturePath, button1Y);
-    initButton2(button2TexturePath, button2Y);
-    clickBuffer.loadFromFile(dataPath + "Sounds/ClickSound.wav");
-    clickSound.setBuffer(clickBuffer);
-    clickSound.setVolume(settings.getVolumeClick());  
+    //initialise all 3 textures and get bounds from buttons
+    initButton(m_game_menu_sprite, menu_texture, Vector2f(POSITION_Y, menu_y));
+    m_button_one_bound = initButton(m_button_one_sprite, button_one_texture, Vector2f(POSITION_Y, button_one_y));
+    m_button_two_bound = initButton(m_button_two_sprite, button_two_texture, Vector2f(POSITION_Y, button_two_y));
+    
+    //initialise click sound
+    m_click_sound.setBuffer(m_resource.m_click_buffer);
+    m_click_sound.setVolume(m_settings.getVolumeClick());  
 }
 
 CGameMenu::~CGameMenu()
 {}
 
-WindowInstance CGameMenu::gameMenuTick(sf::RenderWindow& renderWindow)
+WindowInstance CGameMenu::gameMenuTick(RenderWindow& renderWindow)
 {
     //wait Event to prevent unnecessary memory and cpu usage
-    sf::Event event;
+    Event event;
     while(renderWindow.waitEvent(event))
     {
         switch(event.type)
         {
-            case sf::Event::Closed:
+            case Event::Closed:
                 renderWindow.close(); break;
             
             //can navigate window with buttons
-            case sf::Event::KeyPressed:
+            case Event::KeyPressed:
                 switch(event.key.code)
                 {
-                    case sf::Keyboard::Escape: return Menu; break;
-                    case sf::Keyboard::Space: return Game; break;
+                    case Keyboard::Escape: return Menu; break;
+                    case Keyboard::Space: return Game; break;
                     default: break;
                 }
                 break;
             
             //mouse press event
-            case sf::Event::MouseButtonPressed:
-                if(event.mouseButton.button == sf::Mouse::Left)
+            case Event::MouseButtonPressed:
+                if(event.mouseButton.button == Mouse::Left)
                 {
                     //get coordinates of mouse press
-                    sf::Vector2i cords = sf::Mouse::getPosition(renderWindow);
+                    Vector2i cords = Mouse::getPosition(renderWindow);
                     //check collition between mouse coordinates and resumeBound
-                    if(button1Bound.contains(cords.x, cords.y)) 
+                    if(m_button_one_bound.contains(cords.x, cords.y)) 
                     {
                         //play click sound, wait and return true(game gest started)
-                        clickSound.play(); 
-                        sf::sleep(sf::milliseconds(300)); 
-                        return button1Action();
+                        m_click_sound.play(); 
+                        sleep(milliseconds(300)); 
+                        return buttonOneAction();
                     }
                     //check collition between mouse coordinates and menuBound
-                    else if(button2Bound.contains(cords.x, cords.y)) 
+                    else if(m_button_two_bound.contains(cords.x, cords.y)) 
                     {
                         //play click sound wait and close window
-                        clickSound.play(); 
-                        sf::sleep(sf::milliseconds(300)); 
-                        return button2Action(); 
+                        m_click_sound.play(); 
+                        sleep(milliseconds(300)); 
+                        return buttonTwoAction(); 
                     }  
                 }
                 break;
@@ -68,50 +74,33 @@ WindowInstance CGameMenu::gameMenuTick(sf::RenderWindow& renderWindow)
     return BreakMenu;
 }
 
-void CGameMenu::initGameMenu(std::string texturePath, int y)
+//used to initialise a button with a texture, position and origin
+FloatRect CGameMenu::initButton(Sprite& sprite, Texture& texture, Vector2f pos)
 {
-    gameMenuTexture.loadFromFile(texturePath);
-    this->gameMenuSprite.setTexture(this->gameMenuTexture);
-    this->gameMenuSprite.setOrigin(int(gameMenuSprite.getGlobalBounds().width/2), int(gameMenuSprite.getGlobalBounds().height/2));
-    this->gameMenuSprite.setPosition(500, y);
+    sprite.setTexture(texture);
+    sprite.setOrigin(int(sprite.getGlobalBounds().width/2), int(sprite.getGlobalBounds().height/2));
+    sprite.setPosition(pos);
+
+    //returns global bounds for button click-detection
+    return sprite.getGlobalBounds();
 }
 
-void CGameMenu::initButton1(std::string texturePath, int y)
-{
-    button1Texture.loadFromFile(texturePath);
-    //sets play texture, sets origin in center and sets position
-    this->button1Sprite.setTexture(button1Texture);
-    this->button1Sprite.setOrigin(int(button1Sprite.getGlobalBounds().width/2), int(button1Sprite.getGlobalBounds().height/2));
-    this->button1Sprite.setPosition(500, y);
-    //get bounds for mouseclick event
-    this->button1Bound = button1Sprite.getGlobalBounds();
-}
-
-void CGameMenu::initButton2(std::string texturePath, int y)
-{
-    button2Texture.loadFromFile(texturePath);
-    //sets play texture, sets origin in center and sets position
-    this->button2Sprite.setTexture(button2Texture);
-    this->button2Sprite.setOrigin(int(button2Sprite.getGlobalBounds().width/2), int(button2Sprite.getGlobalBounds().height/2));
-    this->button2Sprite.setPosition(500, y);
-    //get bounds for mouseclick event
-    this->button2Bound = button2Sprite.getGlobalBounds();
-}
-
-void CGameMenu::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    target.draw(*this->gameInstance); 
-    target.draw(this->gameMenuSprite);  
-    target.draw(this->button1Sprite);
-    target.draw(this->button2Sprite);
-}
-
-WindowInstance CGameMenu::button1Action()
+//contains the action that is performed on button press
+WindowInstance CGameMenu::buttonOneAction()
 {
     return Game;
 }
 
-WindowInstance CGameMenu::button2Action()
+//contains the action that is performed on button press
+WindowInstance CGameMenu::buttonTwoAction()
 {
     return Menu;
+}
+
+void CGameMenu::draw(RenderTarget& target, RenderStates states) const
+{
+    target.draw(*this->m_game_instance); 
+    target.draw(this->m_game_menu_sprite);  
+    target.draw(this->m_button_one_sprite);
+    target.draw(this->m_button_two_sprite);
 }

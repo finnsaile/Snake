@@ -1,71 +1,79 @@
 #include "../headers/CNode.hpp"
 #include <iostream>
 
+using namespace sf;
 //constructor initializes nodeposition and next pointer
-CNode::CNode(int posY, int posX, SnakeState snakeState):
-nodePosX(posX),
-nodePosY(posY),
-nodeState(snakeState),
-next(NULL)
+CNode::CNode(int pos_y, int pos_x, SnakeState snake_state):
+m_node_state(snake_state),
+m_node_pos_y(pos_y),
+m_node_pos_x(pos_x),
+next(NULL),
+m_resource(CResources::getInstance())
 {
-    //dependent on direction load correct head node
-    switch(snakeState)
+    //depeningent on direction of snake reference correct texture
+    switch(snake_state)
     {
-        case W: nodeTextureHead.loadFromFile(dataPath + "Snake/SnakeHeadW.png"); break;
-        case A: nodeTextureHead.loadFromFile(dataPath + "Snake/SnakeHeadA.png"); break;
-        case S: nodeTextureHead.loadFromFile(dataPath + "Snake/SnakeHeadS.png"); break;
-        case D: nodeTextureHead.loadFromFile(dataPath + "Snake/SnakeHeadD.png"); break;
+        case W: m_node_texture = &m_resource.m_head_w; break;
+        case A: m_node_texture = &m_resource.m_head_a; break;
+        case S: m_node_texture = &m_resource.m_head_s; break;
+        case D: m_node_texture = &m_resource.m_head_d; break;
     }
-    //set head node
-    //set origin top left and set poition
-    node.setTextureRect(sf::IntRect(0, 0, 40, 40));
-    node.setTexture(nodeTextureHead);
-    node.setOrigin(sf::Vector2f(0,0));
-    node.setPosition(posX, posY);
-        
+
+    //set position, texture, and origin of node
+    m_node.setTexture(*m_node_texture);
+    m_node.setOrigin(Vector2f(0,0));
+    m_node.setPosition(pos_x, pos_y);     
 }
 
 //function to change texture once node isn't head anymore
-void CNode::changeText(SnakeState snakeState, bool tailBool)
+//this funtion gets called once for every node when a new head is created right above it
+void CNode::changeTexture(SnakeState snake_state, bool tailBool)
 {
+    //if the node is not the last node of the snake
     if(tailBool == false)
     {
-        if(snakeState != nodeState)
+        //if the new head is not moving in the same direction as the node,
+        //meaning that the snake is turning, the texture needs to be a curve texture
+        if(snake_state != m_node_state)
         {
-            if(snakeState == A && nodeState == W || snakeState == S && nodeState == D) nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeBodyAW.png");
-            else if(snakeState == D && nodeState == W || snakeState == S && nodeState == A) nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeBodyDW.png");
-            else if(snakeState == A && nodeState == S || snakeState == W && nodeState == D) nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeBodyAS.png");
-            else if(snakeState == D && nodeState == S || snakeState == W && nodeState == A) nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeBodyDS.png");
+            //load the right texture according to the combination of node- and snakestate
+            if(snake_state == A && m_node_state == W || snake_state == S && m_node_state == D) m_node_texture = &m_resource.m_body_aw;
+            else if(snake_state == D && m_node_state == W || snake_state == S && m_node_state == A) m_node_texture = &m_resource.m_body_dw;
+            else if(snake_state == A && m_node_state == S || snake_state == W && m_node_state == D) m_node_texture = &m_resource.m_body_as;
+            else if(snake_state == D && m_node_state == S || snake_state == W && m_node_state == A) m_node_texture = &m_resource.m_body_ds;
         }
-        else if(snakeState == nodeState)
-        {
-            if(nodeState == W || nodeState == S) nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeBodyWS.png");
-            else if (nodeState == A || nodeState == D) nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeBodyAD.png");
-        }       
-    }
-    else
-    {
-        if (prev != NULL && (nodeState != prev->nodeState))
-        {
-            switch(prev->nodeState)
-            {
-                case W: nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeTailW.png"); break;
-                case A: nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeTailA.png"); break;
-                case S: nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeTailS.png"); break;
-                case D: nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeTailD.png"); break;
-            }
-        }
+        //if the snake is moving straigth
         else
         {
-            switch(nodeState)
-            {
-                case W: nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeTailW.png"); break;
-                case A: nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeTailA.png"); break;
-                case S: nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeTailS.png"); break;
-                case D: nodeTextureBody.loadFromFile(dataPath + "Snake/SnakeTailD.png"); break;
-            }
+            //chose either the horizontal or vertical texture
+            if(m_node_state == W || m_node_state == S) m_node_texture = &m_resource.m_body_ws;
+            else if (m_node_state == A || m_node_state == D) m_node_texture = &m_resource.m_body_ad;
+        }       
+    }
+    //if the node is the tail node
+    else
+    {
+        //create temporary state pointer to avoid multiple switch cases
+        SnakeState* temp_state;
+        //if the snake is of size one head == tail. if this is not the case AND the previous node has a different state,
+        //meaning that the current node is a curve node, set temp state to prev state so the texture of the tail
+        //and the prev node allign 
+        if (prev != NULL && (m_node_state != prev->m_node_state))
+            temp_state = &prev->m_node_state;
+        //else set temp state to the current node state
+        else    
+            temp_state = &m_node_state;
+
+        //chose correct texture according to temp state
+        switch(*temp_state)
+        {
+            case W: m_node_texture = &m_resource.m_tail_w; break;
+            case A: m_node_texture = &m_resource.m_tail_a; break;
+            case S: m_node_texture = &m_resource.m_tail_s; break;
+            case D: m_node_texture = &m_resource.m_tail_d; break;
         }
     }
 
-    node.setTexture(nodeTextureBody);
+    //set the texture of the node
+    m_node.setTexture(*m_node_texture);
 }

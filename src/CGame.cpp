@@ -1,50 +1,49 @@
 #include "../headers/CGame.hpp"
 
-//game constructor initializes snake, food pointer and grid
+#define START_POS_Y 480
+#define START_POS_X 480
+
+using namespace sf;
+using namespace std;
+
+//game constructor initializes snake, food pointer and mgrid
 CGame::CGame(): 
-sf::Drawable(), 
-mysnake(480, 480),
-settings(false)
+m_snake(START_POS_X, START_POS_Y)
 {
-    food = new CFood(settings.getDifficulty());
+    m_food = make_shared<CFood>(m_settings.getDifficulty());
 }
 
 CGame::~CGame()
-{
-    delete food;
-}
+{}
 
 //game tick function takes renderWindow as parameter to get input
-WindowInstance CGame::gameTick(sf::RenderWindow& renderWindow)
+WindowInstance CGame::gameTick(RenderWindow& renderWindow)
 {
     //chang bool to determine if menu should be opened
-    newInstance = Game;
+    m_new_instance = Game;
      //eventloop
-     if(mysnake.getChangedThisTick() == false)
+     if(m_snake.getChangedThisTick() == false)
      {
-        sf::Event event;
+        Event event;
         while(renderWindow.pollEvent(event))
         {
             switch(event.type)
             {
                 //close game when X is pressed
-                case sf::Event::Closed: 
+                case Event::Closed: 
                     renderWindow.close(); break;
                 
                 //determines the correct key press
-                case sf::Event::KeyPressed:
-                    //getChangedThisTick to allow only one movement per tick
-                    //if(mysnake.getChangedThisTick() == false)
-                    //{
+                case Event::KeyPressed:
                          switch(event.key.code)
                         {
                             //W A S D for movement. Can't go in opposite direction
-                            case sf::Keyboard::W: if (mysnake.getState() != S) mysnake.setState(W); break;
-                            case sf::Keyboard::D: if (mysnake.getState() != A) mysnake.setState(D); break;
-                            case sf::Keyboard::S: if (mysnake.getState() != W) mysnake.setState(S); break;
-                            case sf::Keyboard::A: if (mysnake.getState() != D) mysnake.setState(A); break;
-                            //if escape is pressed newInstance is set to true
-                            case sf::Keyboard::Escape:  newInstance = BreakMenu; break;
+                            case Keyboard::W: if (m_snake.getState() != S) m_snake.setState(W); break;
+                            case Keyboard::D: if (m_snake.getState() != A) m_snake.setState(D); break;
+                            case Keyboard::S: if (m_snake.getState() != W) m_snake.setState(S); break;
+                            case Keyboard::A: if (m_snake.getState() != D) m_snake.setState(A); break;
+                            //if escape is pressed m_new_instance is set to true
+                            case Keyboard::Escape:  m_new_instance = BreakMenu; break;
                             default: break;
                         }
                     //} 
@@ -53,29 +52,30 @@ WindowInstance CGame::gameTick(sf::RenderWindow& renderWindow)
             break;
         }
      }
-        //movement tick(snake moves every 0.1 seconds)
-        if (clock.getElapsedTime().asSeconds() > convertDifficulty(settings.getDifficulty()) //0.02 Impossible, 0.04 Extreme, 0.06 Hard, 0.08 Medium, 0.1 Easy
-            && newInstance == Game)
+        //movement tick
+        if (m_clock.getElapsedTime().asSeconds() > convertDifficulty(m_settings.getDifficulty())
+            && m_new_instance == Game)
         {
             //if addHead returns true menu is opened
-            mysnake.addHead(*food, newInstance);
-            clock.restart();
-            mysnake.setChangedThisTick(false);
+            m_snake.addHead(*m_food, m_new_instance);
+            m_clock.restart();
+            m_snake.setChangedThisTick(false);
         }
-    return newInstance;
+
+    return m_new_instance;
 }
 
 //draw function draws grid food and snake
-void CGame::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void CGame::draw(RenderTarget& target, RenderStates states) const
 {
-    target.draw(grid);
-    target.draw(mysnake);
-    target.draw(*food);
+    target.draw(m_grid);
+    target.draw(m_snake);
+    target.draw(*m_food);
 }
 
-float CGame::convertDifficulty(Difficulty n)
+float CGame::convertDifficulty(Difficulty difficulty)
 {
-    switch(n)
+    switch(difficulty)
     {
         case Easy: return 0.1;
         case Medium: return 0.08;

@@ -2,19 +2,19 @@
 
 
 //Counter constructor initializes 2 colors and score with parameter
-CCounter::CCounter(unsigned int initScore, int x, int y, bool highBool): 
+CCounter::CCounter(unsigned int init_score, int x, int y, bool high_bool): 
 sf::Drawable(), 
-myBlack(0, 0, 0, 200), 
-myGreen(140, 198, 63, 200),
-myRed(198, 100, 63, 200),
-score(initScore),
-posX(x),
-posY(y),
-highscoreCounter(highBool)
+m_black(0, 0, 0, 200), 
+m_green(140, 198, 63, 200),
+m_red(198, 100, 63, 200),
+m_score(init_score),
+m_pos_x(x),
+m_pos_y(y),
+m_highscore_counter(high_bool),
+m_resource(CResources::getInstance())
 {   
     //load score Font and set score text to initial value
-    scoreFont.loadFromFile(dataPath + "Fonts/ARCADE_R.TTF");
-    scoreText.setString(std::to_string(score));
+    m_score_text.setString(std::to_string(m_score));
     
     //counter attributes and position are initialized
     setCounterAttributes();
@@ -24,9 +24,9 @@ highscoreCounter(highBool)
 //increses score by given amount
 void CCounter::increaseScore(unsigned int amount)
 {
-    score += amount;
+    m_score += amount;
     //score text gets updated
-    scoreText.setString(std::to_string(score));
+    m_score_text.setString(std::to_string(m_score));
     //score position gets updated
     setCounterPosition();
 }
@@ -34,46 +34,46 @@ void CCounter::increaseScore(unsigned int amount)
 //draw function draws score text
 void CCounter::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    target.draw(scoreText);
+    target.draw(m_score_text);
 }
 
 //sets position of score counter
 void CCounter::setCounterPosition()
 {
-    scoreText.getGlobalBounds();
+    m_score_text.getGlobalBounds();
     //origin is in the top right corner so score stays at the same position despite 2 digits
-    if(highscoreCounter == true)
+    if(m_highscore_counter == true)
     {
-        scoreText.setOrigin(0, 0);
+        m_score_text.setOrigin(0, 0);
     }
     else
     {
-        scoreText.setOrigin(scoreText.getGlobalBounds().width, 0);
+        m_score_text.setOrigin(m_score_text.getGlobalBounds().width, 0);
     }
-    scoreText.setPosition(posX, posY);
+    m_score_text.setPosition(m_pos_x, m_pos_y);
 }
 
 //attributes of counter are set
 void CCounter::setCounterAttributes()
 {
-    scoreText.setFont(scoreFont);
+    m_score_text.setFont(m_resource.m_game_font);
     
-    scoreText.setCharacterSize(80);
-    scoreText.setOutlineThickness(2);
+    m_score_text.setCharacterSize(80);
+    m_score_text.setOutlineThickness(2);
     //own colors being used
-    if(highscoreCounter == true)
+    if(m_highscore_counter == true)
     {
-        scoreText.setFillColor(myRed);
+        m_score_text.setFillColor(m_red);
     }
     else 
     {
-        scoreText.setFillColor(myGreen);
+        m_score_text.setFillColor(m_green);
     }
     
-    scoreText.setOutlineColor(myBlack);
+    m_score_text.setOutlineColor(m_black);
 }
 
 unsigned int CCounter::getScore()
 {
-    return score;
+    return m_score;
 }

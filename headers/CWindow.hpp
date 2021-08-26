@@ -7,7 +7,7 @@
 #include "CGameOverMenu.hpp"
 #include "CSettings.hpp"
 #include "headerEnum.hpp"
-#include "dataPath.hpp"
+#include "CResources.hpp"
 
 
 class CWindow : public sf::Drawable
@@ -18,15 +18,16 @@ class CWindow : public sf::Drawable
         void changeInstance();
         void playClick();
     private:
-        sf::Music gameMusic;
-        WindowInstance windowInstance;
-        WindowInstance newInstance;
-        CGame* gameInstance;
-        CMenu* menuInstance;
-        CBreakMenu* breakMenuInstance;
-        CGameOverMenu* gameOverMenuInstance;
-        CSettings* settingsInstance;
-        CSettings* settings;
+        CResources& m_resource;
+        sf::Music m_game_music;
+        WindowInstance m_window_instance = Menu;
+        WindowInstance m_new_instance = Menu;
+        CGame* m_game_instance = nullptr;
+        CMenu* m_menu_instance = nullptr;
+        CBreakMenu* m_break_menu_instance = nullptr;
+        CGameOverMenu* m_game_over_menu_instance = nullptr;
+        CSettings* m_settings_instance = nullptr;
+        CSettings* m_settings = new CSettings;
         
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

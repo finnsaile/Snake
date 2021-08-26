@@ -2,8 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include "headerEnum.hpp"
-#include "dataPath.hpp"
 #include "CSettings.hpp"
+#include "CResources.hpp"
 
 class CMenu : public sf::Drawable
 {
@@ -11,26 +11,24 @@ class CMenu : public sf::Drawable
         CMenu();
         WindowInstance menuTick(sf::RenderWindow&);
     private:
-        void initLogo();
-        void initPlay();
-        void initQuit();
-        void initSettings();
-        CSettings settings;
-        sf::Sprite logo;
-        sf::Sprite play;
-        sf::Sprite quit;
-        sf::Sprite settingsSprite;
-        sf::Texture logoTexture;
-        sf::Texture playTexture;
-        sf::Texture quitTexture;
-        sf::Texture settingsTexture;
-        sf::FloatRect playBound;
-        sf::FloatRect quitBound;
-        sf::FloatRect settingsBound;
-        sf::SoundBuffer clickBuffer;
-        sf::Sound clickSound;
-        sf::Font menuFont;
-        sf::Color myBlack; 
-        sf::Color myGreen; 
+        sf::FloatRect initButton(sf::Sprite&, sf::Texture&, sf::Vector2f);
+        void initTextures();
+
+        CSettings m_settings;
+
+        CResources& m_resource;
+
+        sf::Sprite m_logo_sprite;
+        sf::Sprite m_play_sprite;
+        sf::Sprite m_quit_sprite;
+        sf::Sprite m_settings_sprite;
+
+        sf::FloatRect m_play_bound;
+        sf::FloatRect m_quit_bound;
+        sf::FloatRect m_settings_bound;
+
+        sf::Sound m_click_sound;
+        sf::Color m_my_black; 
+        sf::Color m_my_green; 
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

@@ -1,13 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "CGameMenu.hpp"
-#include "dataPath.hpp"
 class CGameOverMenu : public CGameMenu
 {
     public:
-        CGameOverMenu(CGame*, std::string, std::string, std::string);
+        CGameOverMenu(CGame*, sf::Texture&, sf::Texture&, sf::Texture&);
     private:
-        sf::SoundBuffer gameOverSoundBuffer;
-        sf::Sound gameOverSound;
+        sf::Sound m_game_over_sound;
 };
 

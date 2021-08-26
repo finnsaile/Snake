@@ -5,7 +5,5 @@
 class CBreakMenu : public CGameMenu
 {
     public:
-        CBreakMenu(CGame*, std::string, std::string, std::string);
-    private:
-
+        CBreakMenu(CGame*, sf::Texture&, sf::Texture&, sf::Texture&);
 };

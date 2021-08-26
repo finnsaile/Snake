@@ -1,9 +1,10 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <iostream>
 #include "CNode.hpp"
 #include "headerEnum.hpp"
 #include "CFood.hpp"
-#include <iostream>
+
 
 //snake class
 class CSnake : public sf::Drawable
@@ -19,10 +20,12 @@ class CSnake : public sf::Drawable
         bool getChangedThisTick();
         SnakeState getState();
     private:
-        virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
-        SnakeState snakeState;
-        bool changedThisTick;
+        SnakeState m_snake_state = W;
+        bool m_changed_this_tick_b = false;
+        
         //node pointer for head and tail
         CNode *tail;
         CNode *head;        
+        
+        virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
