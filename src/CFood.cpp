@@ -88,7 +88,7 @@ void CFood::gotEaten(CNode* head)
         while(temp != NULL)
         {
             //body bound gets set to current node bound
-            bodyBound = temp->node.getGlobalBounds();
+            bodyBound = temp->m_node.getGlobalBounds();
             //when new food and node collide variable is set to true, new coordinates are set and while loop breaks
             if(foodBound.intersects(bodyBound)) 
             {

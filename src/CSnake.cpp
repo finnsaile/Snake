@@ -35,10 +35,10 @@ void CSnake::addHead(CFood& food, WindowInstance& newInstance)
     switch(this->snakeState)
     {
         //position of new head gets calculated using old heads position and moving direction
-        case W: tempY = this->head->nodePosY - 40;  tempX = this->head->nodePosX; break;
-        case D: tempY = this->head->nodePosY;       tempX = this->head->nodePosX + 40; break;
-        case S: tempY = this->head->nodePosY + 40;  tempX = this->head->nodePosX; break;
-        case A: tempY = this->head->nodePosY;       tempX = this->head->nodePosX - 40; break;
+        case W: tempY = this->head->m_node_pos_y - 40;  tempX = this->head->m_node_pos_x; break;
+        case D: tempY = this->head->m_node_pos_y;       tempX = this->head->m_node_pos_x + 40; break;
+        case S: tempY = this->head->m_node_pos_y + 40;  tempX = this->head->m_node_pos_x; break;
+        case A: tempY = this->head->m_node_pos_y;       tempX = this->head->m_node_pos_x - 40; break;
     }
     //new head gets created at calculated coordinates. All pointers are set to link the head to the list
     this->head->prev = new CNode(tempY, tempX, snakeState);
@@ -48,7 +48,7 @@ void CSnake::addHead(CFood& food, WindowInstance& newInstance)
 
     //bounds for head food and body to check for collition when creating the new head
     sf::FloatRect foodBound = food.returnRect();
-    sf::FloatRect headBound = this->head->node.getGlobalBounds();
+    sf::FloatRect headBound = this->head->m_node.getGlobalBounds();
     sf::FloatRect bodyBound;
     
     //if the head collides with one of the body nodes true is returned
@@ -59,10 +59,10 @@ void CSnake::addHead(CFood& food, WindowInstance& newInstance)
     }
 
     //if new head is created outside the window(player crashed into border) true is returned
-    if( this->head->nodePosX < 0|
-        this->head->nodePosX >= 1000|
-        this->head->nodePosY < 0|
-        this->head->nodePosY >= 1000) newInstance = GameOverMenu;
+    if( this->head->m_node_pos_x < 0|
+        this->head->m_node_pos_x >= 1000|
+        this->head->m_node_pos_y < 0|
+        this->head->m_node_pos_y >= 1000) newInstance = GameOverMenu;
 
     //if the head collides with the food 
     if(headBound.intersects(foodBound))
@@ -75,7 +75,7 @@ void CSnake::addHead(CFood& food, WindowInstance& newInstance)
         while(temp->next != NULL)
         {
             temp = temp->next;
-            bodyBound = temp->node.getGlobalBounds();
+            bodyBound = temp->m_node.getGlobalBounds();
             if(headBound.intersects(bodyBound)) newInstance = GameOverMenu;
         }
     }
@@ -89,7 +89,7 @@ void CSnake::addHead(CFood& food, WindowInstance& newInstance)
         while(temp->next != NULL)
         {
             temp = temp->next;
-            bodyBound = temp->node.getGlobalBounds();
+            bodyBound = temp->m_node.getGlobalBounds();
             if(headBound.intersects(bodyBound)) newInstance = GameOverMenu;
         }
     }
@@ -110,7 +110,7 @@ void CSnake::draw(sf::RenderTarget& target, sf::RenderStates states) const
     CNode *temp = tail;
     while(temp != NULL)
     {
-        target.draw(temp->node);
+        target.draw(temp->m_node);
         temp = temp->prev;
     }
 }
