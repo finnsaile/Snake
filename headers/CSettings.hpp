@@ -4,9 +4,9 @@
 #include <fstream>
 #include <string>
 #include <iostream>
-#include "dataPath.hpp"
 #include "headerEnum.hpp"
 #include "CSlider.hpp"
+#include "CResources.hpp"
 
 class CSettings : public sf::Drawable
 {
@@ -22,7 +22,6 @@ class CSettings : public sf::Drawable
     private: 
         //functions to initialise sprites, buttons and sliders
         sf::FloatRect initButton(sf::Sprite&, sf::Texture&, sf::Vector2f);
-        void loadFiles();
         void initSliders();
         void initTextures();
 
@@ -43,8 +42,9 @@ class CSettings : public sf::Drawable
         int m_volume_game_over;
         Difficulty m_difficulty;
 
+        CResources& m_resource;
         //sound variables
-        sf::SoundBuffer m_click_buffer;
+        // sf::SoundBuffer m_click_buffer;
         sf::Sound m_click_sound;
 
         //sprites for settings and buttons
@@ -56,16 +56,6 @@ class CSettings : public sf::Drawable
         sf::Sprite m_menu_sprite;
         sf::Sprite m_difficulty_sprite;
         sf::Sprite m_volume_sprite;
-
-        //textures for buttons and overall settings
-        sf::Texture m_difficulty_texture;
-        sf::Texture m_volume_texture;
-        sf::Texture m_difficulty_easy_texture;
-        sf::Texture m_difficulty_medium_texture;
-        sf::Texture m_difficulty_hard_texture;
-        sf::Texture m_difficulty_extreme_texture;
-        sf::Texture m_difficulty_impossible_texture;
-        sf::Texture m_menu_texture;
 
         //rectangles to save button bounds
         sf::FloatRect m_difficulty_easy_bounds;

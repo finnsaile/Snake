@@ -2,15 +2,17 @@
 #include <iostream>
 
 #define SLIDER_WIDTH 250
+
+using namespace sf;
+
 //initialise all textures and sprites for the slider
-CSlider::CSlider(int* value_pointer, int pos_x, int pos_y, std::string sliderNamePath) : 
+CSlider::CSlider(int* value_pointer, int pos_x, int pos_y, Texture& slider_name_texture) : 
 m_slider_value(value_pointer),
 m_slider_pos_x(pos_x),
-m_slider_pos_y(pos_y)
+m_slider_pos_y(pos_y),
+m_resource(CResources::getInstance()),
+m_slider_name_texture(slider_name_texture)
 {   
-    //load texture for slider name
-    m_slider_name_texture.loadFromFile(sliderNamePath);
-
     //check if value of slider is out of bounds, 
     //if yes change value to upper or lower bound respectively 
     if(*m_slider_value > m_slider_max)
@@ -53,11 +55,8 @@ void CSlider::moveSlider(int cord_x)
 //init position, origin and textures for slider components
 void CSlider::initSlider()
 {
-    m_slider_bar_texture.loadFromFile(dataPath + "Slider/SliderBar.png");
-    m_slider_dot_texture.loadFromFile(dataPath + "Slider/SliderDot.png");
-
-    m_slider_bar_sprite.setTexture(m_slider_bar_texture);
-    m_slider_dot_sprite.setTexture(m_slider_dot_texture);
+    m_slider_bar_sprite.setTexture(m_resource.m_slider_bar_texture);
+    m_slider_dot_sprite.setTexture(m_resource.m_slider_dot_texture);
     m_slider_name_sprite.setTexture(m_slider_name_texture);
 
     //origin of slider bar is on the lower bound in the center

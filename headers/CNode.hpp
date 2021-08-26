@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "headerEnum.hpp"
-#include "dataPath.hpp"
 #include "CResources.hpp"
 
 //node class to build the parts of the snake

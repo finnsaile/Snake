@@ -1,13 +1,14 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "dataPath.hpp"
 #include <iostream>
+#include "CResources.hpp"
+
 
 class CSlider : public sf::Drawable
 {
     public:
         //constructor
-        CSlider(int*, int, int, std::string);
+        CSlider(int*, int, int, sf::Texture&);
         //move slider according to input coordinate
         void moveSlider(int);
         //return slider bounds for activation
@@ -23,10 +24,9 @@ class CSlider : public sf::Drawable
         int m_slider_pos_x;
         int m_slider_pos_y;
 
+        CResources& m_resource;
         //textures and sprites
-        sf::Texture m_slider_bar_texture;
-        sf::Texture m_slider_dot_texture;
-        sf::Texture m_slider_name_texture;
+        sf::Texture& m_slider_name_texture;
         sf::Sprite m_slider_bar_sprite;
         sf::Sprite m_slider_dot_sprite;
         sf::Sprite m_slider_name_sprite;

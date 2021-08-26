@@ -12,12 +12,13 @@ class CGame : public sf::Drawable
         ~CGame();
         WindowInstance gameTick(sf::RenderWindow&);
     private:
-        CSnake mysnake;
-        CFood *food;
-        CGrid grid;
-        CSettings settings;
-        sf::Clock clock;
-        WindowInstance newInstance;
+        CSnake m_snake;
+        std::shared_ptr<CFood> m_food;
+        CGrid m_grid;
+        CSettings m_settings;
+
+        sf::Clock m_clock;
+        WindowInstance m_new_instance;
         float convertDifficulty(Difficulty);
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
