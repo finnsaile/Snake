@@ -1,9 +1,11 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "../headers/CSnake.hpp"
-#include "../headers/CGrid.hpp"
-#include "../headers/CGame.hpp"
 #include "../headers/CWindow.hpp"
+
+#define WIN_SIZE 1000
+
+using namespace sf;
+
 
 int main(int argc, char* argv[])
 {
@@ -11,9 +13,9 @@ int main(int argc, char* argv[])
     srand(time(NULL));
 
     //create window with VSync
-    sf::RenderWindow gamewindow(sf::VideoMode(1000, 1000), "Snake", sf::Style::Titlebar | sf::Style::Close);
+    RenderWindow gamewindow(VideoMode(WIN_SIZE, WIN_SIZE), "Snake", Style::Titlebar | Style::Close);
     gamewindow.setVerticalSyncEnabled(true);
-    gamewindow.setKeyRepeatEnabled(false); //maybe change
+    gamewindow.setKeyRepeatEnabled(false); 
     //create window object
     CWindow window;
     while(gamewindow.isOpen())
@@ -22,7 +24,7 @@ int main(int argc, char* argv[])
         window.windowTick(gamewindow);
         
         //clear, draw and display window object
-        gamewindow.clear(sf::Color (169,169,169));
+        gamewindow.clear(Color (169,169,169));
         gamewindow.draw(window);
         gamewindow.display();
     }    
