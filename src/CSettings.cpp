@@ -21,7 +21,6 @@ CSettings::~CSettings()
 
 WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
 {
-    //wait Event to prevent unnecessary memory and cpu usage
     Event event;
     while(renderWindow.pollEvent(event))
     {
@@ -45,37 +44,33 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                 {
                     //get coordinates of mouse press
                     Vector2i cords = Mouse::getPosition(renderWindow);
-                    //check collition between mouse coordinates and playBound
+                    //check collition between mouse coordinates and button bounds
                     if(m_difficulty_easy_bounds.contains(cords.x, cords.y)) 
                     {
-                        //play click sound, wait and return true(game gest started)
                         m_click_sound.play(); 
                         m_difficulty = Easy;
                     }
                     else if(m_difficulty_medium_bounds.contains(cords.x, cords.y)) 
                     {
-                        //play click sound, wait and return true(game gest started)
                         m_click_sound.play(); 
                         m_difficulty = Medium;
                     }
                     else if(m_difficulty_hard_bounds.contains(cords.x, cords.y)) 
                     {
-                        //play click sound, wait and return true(game gest started)
                         m_click_sound.play(); 
                         m_difficulty = Hard;
                     }
                     else if(m_difficulty_extreme_bounds.contains(cords.x, cords.y)) 
                     {
-                        //play click sound, wait and return true(game gest started)
                         m_click_sound.play(); 
                         m_difficulty = Extreme;
                     }
                     else if(m_difficulty_impossible_bounds.contains(cords.x, cords.y)) 
                     {
-                        //play click sound, wait and return true(game gest started)
                         m_click_sound.play(); 
                         m_difficulty = Impossible;
                     } 
+                    //compare click position with slider dot bounds and set m_active_slider accordingly
                     else if(m_slider_music->getSliderBounds().contains(cords.x, cords.y))
                     {
                         m_active_slider = m_slider_music;          
@@ -95,7 +90,7 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     }
                     else if(m_menu_bounds.contains(cords.x, cords.y)) 
                     {
-                        //play click sound, wait and return true(game gets started)
+                        //play click sound, save settings, wait and return Menu
                         m_click_sound.play(); 
                         this->setSettings();
                         sleep(milliseconds(LEFT_SIDE_X)); 
@@ -103,7 +98,9 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     }
                 }
                 break;
+
             case Event::MouseButtonReleased:
+                //if left mousebutton is released and 
                 if(event.mouseButton.button == Mouse::Left)
                     if(m_active_slider != nullptr)
                         m_active_slider = nullptr;
