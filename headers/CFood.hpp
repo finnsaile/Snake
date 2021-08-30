@@ -12,12 +12,12 @@
 class CFood : public sf::Drawable
 {
     public:
-        CFood(Difficulty);
+        CFood(Difficulty, CNode*);
         ~CFood();
         //gotEaten to relocate food
         void gotEaten(CNode*);
         //returnRect to get bounds of food
-        sf::FloatRect returnRect();
+        sf::FloatRect getFoodBounds();
     private:
         int m_pos_x;
         int m_pos_y;
@@ -41,6 +41,6 @@ class CFood : public sf::Drawable
         Difficulty m_difficulty;
         
         unsigned int initHighscore(Difficulty);
-        void setRandCoordinates();
+        void setRandCoordinates(CNode* head);
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
