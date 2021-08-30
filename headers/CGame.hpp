@@ -17,6 +17,8 @@ class CGame : public sf::Drawable
         CGrid m_grid;
         CSettings m_settings;
 
+        float m_difficulty_f;
+
         sf::Clock m_clock;
         WindowInstance m_new_instance;
         float convertDifficulty(Difficulty);

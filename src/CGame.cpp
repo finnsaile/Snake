@@ -1,4 +1,5 @@
 #include "../headers/CGame.hpp"
+#include <chrono>
 
 #define START_POS_Y 480
 #define START_POS_X 480
@@ -6,11 +7,12 @@
 using namespace sf;
 using namespace std;
 
-//game constructor initializes snake, food pointer and mgrid
+//game constructor initializes snake, food pointer and grid
 CGame::CGame(): 
-m_snake(START_POS_X, START_POS_Y)
+m_snake(START_POS_X, START_POS_Y, 2),
+m_difficulty_f(convertDifficulty(m_settings.getDifficulty()))
 {
-    m_food = make_shared<CFood>(m_settings.getDifficulty());
+    m_food = make_shared<CFood>(m_settings.getDifficulty(), m_snake.getHead());
 }
 
 CGame::~CGame()
@@ -21,7 +23,7 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
 {
     //chang bool to determine if menu should be opened
     m_new_instance = Game;
-     //eventloop
+    //eventloop
      if(m_snake.getChangedThisTick() == false)
      {
         Event event;
@@ -53,7 +55,7 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
         }
      }
         //movement tick
-        if (m_clock.getElapsedTime().asSeconds() > convertDifficulty(m_settings.getDifficulty())
+        if (m_clock.getElapsedTime().asSeconds() > m_difficulty_f
             && m_new_instance == Game)
         {
             //if addHead returns true menu is opened
@@ -61,7 +63,6 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
             m_clock.restart();
             m_snake.setChangedThisTick(false);
         }
-
     return m_new_instance;
 }
 
@@ -82,6 +83,7 @@ float CGame::convertDifficulty(Difficulty difficulty)
         case Hard: return 0.06;
         case Extreme: return 0.04;
         case Impossible: return 0.02;
+
         default: return 0.1;
     }
 }
