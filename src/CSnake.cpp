@@ -1,16 +1,20 @@
 #include "../headers/CSnake.hpp"
 
+#define TILE_SIZE 40
+#define GRID_SIZE 25
+#define MAX_INIT_LENGTH (12 * 13)
 using namespace sf;
 using namespace std;
 
 //constructor takes new head position as argument 
 //and initializes new node as head, snakeState(direction) and changedState
-CSnake::CSnake(int init_x, int init_y): 
+CSnake::CSnake(int init_x, int init_y, unsigned int length): 
 head(new CNode(init_y, init_x, W))
 {  
     //tail = head (only 1 node exists)
     head->prev = NULL;
     tail = head;
+    initSnake(length);
 }
 
 CSnake::~CSnake()
@@ -31,61 +35,56 @@ void CSnake::addHead(CFood& food, WindowInstance& new_instance)
 
     head->changeTexture(m_snake_state, false);
 
-    int temp_y, temp_x;
+    int temp_y = head->m_node_pos_y;
+    int temp_x = head->m_node_pos_x;
     switch(m_snake_state)
     {
         //position of new head gets calculated using old heads position and moving direction
-        case W: temp_y = head->m_node_pos_y - 40;  temp_x = head->m_node_pos_x; break;
-        case D: temp_y = head->m_node_pos_y;       temp_x = head->m_node_pos_x + 40; break;
-        case S: temp_y = head->m_node_pos_y + 40;  temp_x = head->m_node_pos_x; break;
-        case A: temp_y = head->m_node_pos_y;       temp_x = head->m_node_pos_x - 40; break;
+        case W: temp_y -= TILE_SIZE; break;
+        case A: temp_x -= TILE_SIZE; break;
+        case S: temp_y += TILE_SIZE; break;
+        case D: temp_x += TILE_SIZE; break;
     }
+
+    //** CRASH WHEN HITTING WALL **//
+    //if new head is created outside the window(player crashed into border) true is returned
+    if( temp_x < 0|
+        temp_x >= 1000|
+        temp_y < 0|
+        temp_y >= 1000) new_instance = GameOverMenu;
+
+    //** DON'T CRASH WHEN HITTING WALL **//
+    // if(temp_x < 0) temp_x += 1000;
+    // else if(temp_x >= 1000) temp_x -= 1000;
+    // else if(temp_y < 0) temp_y += 1000;
+    // else if(temp_y >= 1000) temp_y -= 1000;
+
     //new head gets created at calculated coordinates. All pointers are set to link the head to the list
     head->prev = new CNode(temp_y, temp_x, m_snake_state);
     head->prev->next = head;
     head = head->prev;
     head->prev = NULL;
+    
 
-    //bounds for head food and body to check for collition when creating the new head
-    FloatRect food_bound = food.returnRect();
+    //bounds for head and body to check for collition when creating the new head
     FloatRect head_bound = head->m_node.getGlobalBounds();
     FloatRect body_bound;
-    
-    //if the head collides with one of the body nodes true is returned
-    CNode *temp = head;
-    while(temp->next != NULL)
-    {
-        temp = temp->next;
-    }
-
-    //if new head is created outside the window(player crashed into border) true is returned
-    if( head->m_node_pos_x < 0|
-        head->m_node_pos_x >= 1000|
-        head->m_node_pos_y < 0|
-        head->m_node_pos_y >= 1000) new_instance = GameOverMenu;
 
     //if the head collides with the food 
-    if(head_bound.intersects(food_bound))
+    if(head_bound.intersects(food.getFoodBounds()))
     {
-        temp->changeTexture(m_snake_state, true);
+        tail->changeTexture(m_snake_state, true);
         //food gets relocated
         food.gotEaten(head);
-        
-        temp = head;
-        while(temp->next != NULL)
-        {
-            temp = temp->next;
-            body_bound = temp->m_node.getGlobalBounds();
-            if(head_bound.intersects(body_bound)) new_instance = GameOverMenu;
-        }
     }
     else
     {
-        if(temp->prev->prev != NULL) temp->prev->changeTexture(m_snake_state, true);
-        //tail gests removed only when no food is eaten (snake grows)
+        if(tail->prev->prev != NULL) tail->prev->changeTexture(m_snake_state, true);
+        //tail gets removed only when no food is eaten (snake grows)
         removeTail();
 
-        temp = head;
+        //** GAME OVER WHEN SNAKE HITS SNAKE **//
+        CNode* temp = head;
         while(temp->next != NULL)
         {
             temp = temp->next;
@@ -93,6 +92,42 @@ void CSnake::addHead(CFood& food, WindowInstance& new_instance)
             if(head_bound.intersects(body_bound)) new_instance = GameOverMenu;
         }
     }
+}
+
+void CSnake::initSnake(unsigned int length)
+{   
+    unsigned int tail_length = length - 1;
+    int delta_y, delta_x;
+    CNode* temp = head;
+    SnakeState state;
+
+    if(tail_length > MAX_INIT_LENGTH) tail_length = MAX_INIT_LENGTH;
+
+    for(int i = 0; i < tail_length; i++)
+    {   
+        delta_x = static_cast<int>(i / 12);
+
+        if((delta_x % 2) == 1) 
+        {
+            delta_y = 12 - ( (i % 12));
+            if(delta_y == 1) state = A;
+            else state = S;
+        }       
+        else 
+        {
+            delta_y = (1 + (i % 12));
+            if(delta_y == 12) state = A;
+            else state = W;
+        }
+
+        temp->next = new CNode(head->m_node_pos_y + delta_y * TILE_SIZE, head->m_node_pos_x + delta_x * TILE_SIZE, state);
+        temp->next->prev = temp;
+        temp->next->next = NULL;
+        temp = temp->next;
+        temp->changeTexture(temp->prev->m_node_state, false);
+    }
+    temp->changeTexture(W, true);
+    tail = temp;
 }
 
 //function that removes the tail node to make it seem like the snake is moving
@@ -140,5 +175,9 @@ void CSnake::setChangedThisTick(bool changed)
     m_changed_this_tick_b = changed;
 }
 
+CNode* CSnake::getHead()
+{
+    return head;
+}
 
 

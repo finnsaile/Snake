@@ -11,7 +11,7 @@ class CSnake : public sf::Drawable
 {
     //functions to add/remove head/tail of snake to make it move
     public:
-        CSnake(int, int);
+        CSnake(int, int, unsigned int);
         ~CSnake();
         void addHead(CFood&, WindowInstance&);
         void removeTail();
@@ -19,6 +19,7 @@ class CSnake : public sf::Drawable
         void setChangedThisTick(bool);
         bool getChangedThisTick();
         SnakeState getState();
+        CNode* getHead();
     private:
         SnakeState m_snake_state = W;
         bool m_changed_this_tick_b = false;
@@ -27,5 +28,6 @@ class CSnake : public sf::Drawable
         CNode *tail;
         CNode *head;        
         
+        void initSnake(const unsigned int);
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
