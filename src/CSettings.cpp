@@ -23,6 +23,8 @@ CSettings::~CSettings()
 WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
 {
     Event event;
+    static bool wait = true;
+    static int b = 0;
     while(renderWindow.pollEvent(event))
     {
         switch(event.type)
@@ -34,11 +36,11 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
             case Event::KeyPressed:
                 switch(event.key.code)
                 {
-                    case Keyboard::Escape: this->setSettings(); return Menu; break;
+                    case Keyboard::Escape: setSettings(); return Menu; break;
                     default: break;
                 }
                 break;
-            
+
             //mouse press event
             case Event::MouseButtonPressed:
                 if(event.mouseButton.button == Mouse::Left)
@@ -79,7 +81,6 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     else if(m_slider_eat->getSliderBounds().contains(cords.x, cords.y))
                     {
                         m_active_slider = m_slider_eat;   
-                            
                     }
                     else if(m_slider_game_over->getSliderBounds().contains(cords.x, cords.y))
                     {
@@ -93,7 +94,7 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     {
                         //play click sound, save settings, wait and return Menu
                         m_click_sound.play(); 
-                        this->setSettings();
+                        setSettings();
                         sleep(milliseconds(LEFT_SIDE_X)); 
                         return Menu;
                     }
@@ -103,8 +104,11 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
             case Event::MouseButtonReleased:
                 //if left mousebutton is released and 
                 if(event.mouseButton.button == Mouse::Left)
+                {
                     if(m_active_slider != nullptr)
-                        m_active_slider = nullptr;
+                        m_active_slider = nullptr; 
+                }
+
                 break;
 
             default: break;
@@ -207,27 +211,27 @@ FloatRect CSettings::initButton(Sprite& sprite, Texture& texture, Vector2f pos)
 
 int CSettings::getVolumeMusic() const 
 {
-    return this->m_volume_music;
+    return m_volume_music;
 }
 
 int CSettings::getVolumeEat() const
 {
-    return this->m_volume_eat;
+    return m_volume_eat;
 }
 
 int CSettings::getVolumeClick() const
 {
-    return this->m_volume_click;
+    return m_volume_click;
 }
 
 int CSettings::getVolumeGameOver() const
 {
-    return this->m_volume_game_over;
+    return m_volume_game_over;
 }
 
 Difficulty CSettings::getDifficulty() const
 {
-    return this->m_difficulty;
+    return m_difficulty;
 }
 
 //draws all the sprites, buttons and sliders
