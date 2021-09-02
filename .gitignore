@@ -39,3 +39,5 @@
 *.plist
 
 *.plist
+resources/highscore.txt
+resources/settings.txt
