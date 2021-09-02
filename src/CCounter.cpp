@@ -1,5 +1,5 @@
 #include "../headers/CCounter.hpp"
-
+#include <iostream>
 
 //Counter constructor initializes 2 colors and score with parameter
 CCounter::CCounter(unsigned int init_score, int x, int y, bool high_bool): 

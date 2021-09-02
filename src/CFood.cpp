@@ -124,17 +124,35 @@ unsigned int CFood::initHighscore(Difficulty difficulty)
 
     ifstream input;
     input.open(m_resource.DATA_PATH + "highscore.txt");
-
-    //loop for retrieving values and writing them to temporary array
-    for(int i = 0; i < 5; i++)
+    if(input.fail())
     {
-        getline(input, tempString);
-        //value is enclosed in curly brackets e.g. {20}
-        fst = tempString.find("{");
-        lst = tempString.find("}");
-        //create substring only containing the value, convert it and write it to array
-        arr[i] = stoi(tempString.substr(fst + 1, lst - fst));
+        for(int i = 0; i < 5; i++)
+        {
+            arr[i] = 0;
+        }
     }
+    else
+    {
+        for(int i = 0; i < 5; i++)
+        {
+            getline(input, tempString);
+            //value is enclosed in curly brackets e.g. {20}
+            fst = tempString.find("{");
+            lst = tempString.find("}");
+            //create substring only containing the value, convert it and write it to array
+            //if value can't be determined set it to 0
+            try 
+            {
+                arr[i] = stoi(tempString.substr(fst + 1, lst - fst));
+            }
+            catch(...)
+            {
+                arr[i] = 0;
+            }
+        }
+    }
+    //loop for retrieving values and writing them to temporary array
+    
     
     //assign values from array to respective highscore variables
     m_highscore_easy = arr[0];
