@@ -1,5 +1,5 @@
 #include "../headers/CSettings.hpp"
-
+#include <iostream>
 #define LEFT_SIDE_X 300
 #define RIGHT_SIDE_X 700
 
@@ -47,48 +47,27 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                 {
                     //get coordinates of mouse press
                     Vector2i cords = Mouse::getPosition(renderWindow);
-                    //check collition between mouse coordinates and button bounds
-                    if(m_difficulty_easy_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Easy;
-                    }
-                    else if(m_difficulty_medium_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Medium;
-                    }
-                    else if(m_difficulty_hard_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Hard;
-                    }
-                    else if(m_difficulty_extreme_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Extreme;
-                    }
-                    else if(m_difficulty_impossible_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Impossible;
-                    } 
+
                     //compare click position with slider dot bounds and set m_active_slider accordingly
-                    else if(m_slider_music->getSliderBounds().contains(cords.x, cords.y))
+                    if(m_slider_music->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        m_active_slider = m_slider_music;          
+                        m_active_slider_int = m_slider_music;          
                     }
                     else if(m_slider_eat->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        m_active_slider = m_slider_eat;   
+                        m_active_slider_int = m_slider_eat;   
                     }
                     else if(m_slider_game_over->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        m_active_slider = m_slider_game_over;         
+                        m_active_slider_int = m_slider_game_over;         
                     }
                     else if(m_slider_click->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        m_active_slider = m_slider_click;     
+                        m_active_slider_int = m_slider_click;     
+                    }
+                    else if(m_slider_difficulty->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_diff = m_slider_difficulty;     
                     }
                     else if(m_menu_bounds.contains(cords.x, cords.y)) 
                     {
@@ -105,8 +84,11 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                 //if left mousebutton is released and 
                 if(event.mouseButton.button == Mouse::Left)
                 {
-                    if(m_active_slider != nullptr)
-                        m_active_slider = nullptr; 
+                    
+                    if(m_active_slider_int != nullptr)
+                        m_active_slider_int = nullptr; 
+                    else if(m_active_slider_diff != nullptr)
+                        m_active_slider_diff = nullptr;
                 }
 
                 break;
@@ -181,18 +163,26 @@ void CSettings::getSettings()
 //moves the slider that is currently active to the x cursor position
 void CSettings::moveSlider(const RenderWindow& renderWindow)
 {
-    if(m_active_slider != nullptr)
+    if(m_active_slider_int != nullptr)
     {
-        m_active_slider->moveSlider(Mouse::getPosition(renderWindow).x);
+        m_active_slider_int->moveSlider(Mouse::getPosition(renderWindow).x);
+    }
+    else if(m_active_slider_diff != nullptr)
+    {
+        m_active_slider_diff->moveSlider(Mouse::getPosition(renderWindow).x);
+        //set the slider name texture to the corresponding texture from the texture array according to m_difficulty
+        m_active_slider_diff->setSliderName(m_resource.m_difficulty_texture_array[static_cast<int>(m_difficulty)]);
     }
 }
 
+//initialise all sliders
 void CSettings::initSliders()
 {
-    m_slider_music = make_shared<CSlider>(&m_volume_music, RIGHT_SIDE_X, 260, m_resource.m_slider_music_volume);
-    m_slider_eat = make_shared<CSlider>(&m_volume_eat, RIGHT_SIDE_X, 380, m_resource.m_slider_eat_volume);
-    m_slider_game_over = make_shared<CSlider>(&m_volume_game_over, RIGHT_SIDE_X, 500, m_resource.m_slider_lost_volume);
-    m_slider_click = make_shared<CSlider>(&m_volume_click, RIGHT_SIDE_X, 620, m_resource.m_slider_click_volume);
+    m_slider_music = make_shared<CSlider<int>>(&m_volume_music, RIGHT_SIDE_X, 260, m_resource.m_slider_music_volume);
+    m_slider_eat = make_shared<CSlider<int>>(&m_volume_eat, RIGHT_SIDE_X, 380, m_resource.m_slider_eat_volume);
+    m_slider_game_over = make_shared<CSlider<int>>(&m_volume_game_over, RIGHT_SIDE_X, 500, m_resource.m_slider_lost_volume);
+    m_slider_click = make_shared<CSlider<int>>(&m_volume_click, RIGHT_SIDE_X, 620, m_resource.m_slider_click_volume);
+    m_slider_difficulty = make_shared<CSlider<Difficulty>>(&m_difficulty, LEFT_SIDE_X, 260, m_resource.m_difficulty_texture_array[static_cast<int>(m_difficulty)], 0, 4);
 }
 
 //initialises all textures if settings are active
@@ -200,11 +190,6 @@ void CSettings::initTextures()
 {
     if(m_active_settings_b)
     {
-        m_difficulty_easy_bounds = initButton(m_difficulty_easy_sprite, m_resource.m_difficulty_easy_texture, Vector2f(LEFT_SIDE_X, 260));
-        m_difficulty_medium_bounds = initButton(m_difficulty_medium_sprite, m_resource.m_difficulty_medium_texture, Vector2f(LEFT_SIDE_X, 380));
-        m_difficulty_hard_bounds = initButton(m_difficulty_hard_sprite, m_resource.m_difficulty_hard_texture, Vector2f(LEFT_SIDE_X, 500));
-        m_difficulty_extreme_bounds = initButton(m_difficulty_extreme_sprite, m_resource.m_difficulty_extreme_texture, Vector2f(LEFT_SIDE_X, 620));
-        m_difficulty_impossible_bounds = initButton(m_difficulty_impossible_sprite, m_resource.m_difficulty_impossible_texture, Vector2f(LEFT_SIDE_X, 740));
         m_menu_bounds = initButton(m_menu_sprite, m_resource.m_menu_texture, Vector2f(500, 880));
         initButton(m_difficulty_sprite, m_resource.m_difficulty_texture, Vector2f(LEFT_SIDE_X, 160));
         initButton(m_volume_sprite, m_resource.m_volume_texture, Vector2f(RIGHT_SIDE_X, 160));
@@ -255,15 +240,12 @@ Difficulty CSettings::getDifficulty() const
 //draws all the sprites, buttons and sliders
 void CSettings::draw(RenderTarget& target, RenderStates states) const
 {
-    target.draw(m_difficulty_easy_sprite);
-    target.draw(m_difficulty_medium_sprite);
-    target.draw(m_difficulty_hard_sprite);
-    target.draw(m_difficulty_extreme_sprite);
-    target.draw(m_difficulty_impossible_sprite);
     target.draw(*m_slider_music);
     target.draw(*m_slider_eat);
     target.draw(*m_slider_click);
     target.draw(*m_slider_game_over);
+    target.draw(*m_slider_difficulty);
+
     target.draw(m_difficulty_sprite);
     target.draw(m_volume_sprite);
     target.draw(m_menu_sprite);

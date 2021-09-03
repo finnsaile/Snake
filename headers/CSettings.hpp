@@ -58,18 +58,15 @@ class CSettings : public sf::Drawable
         sf::Sprite m_volume_sprite;
 
         //rectangles to save button bounds
-        sf::FloatRect m_difficulty_easy_bounds;
-        sf::FloatRect m_difficulty_medium_bounds;
-        sf::FloatRect m_difficulty_hard_bounds;
-        sf::FloatRect m_difficulty_extreme_bounds;
-        sf::FloatRect m_difficulty_impossible_bounds;
         sf::FloatRect m_menu_bounds;
 
-        //slider pointers
-        std::shared_ptr<CSlider> m_active_slider = nullptr;
-        std::shared_ptr<CSlider> m_slider_music;
-        std::shared_ptr<CSlider> m_slider_eat;
-        std::shared_ptr<CSlider> m_slider_click;
-        std::shared_ptr<CSlider> m_slider_game_over;
+        //slider shared pointers
+        std::shared_ptr<CSlider<int>> m_active_slider_int = nullptr;
+        std::shared_ptr<CSlider<Difficulty>> m_active_slider_diff = nullptr;
+        std::shared_ptr<CSlider<int>> m_slider_music;
+        std::shared_ptr<CSlider<int>> m_slider_eat;
+        std::shared_ptr<CSlider<int>> m_slider_click;
+        std::shared_ptr<CSlider<int>> m_slider_game_over;
+        std::shared_ptr<CSlider<Difficulty>> m_slider_difficulty;
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
