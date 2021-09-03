@@ -40,18 +40,14 @@ class CResources
         //settings textures
         sf::Texture m_difficulty_texture;
         sf::Texture m_volume_texture;
-        sf::Texture m_difficulty_easy_texture;
-        sf::Texture m_difficulty_medium_texture;
-        sf::Texture m_difficulty_hard_texture;
-        sf::Texture m_difficulty_extreme_texture;
-        sf::Texture m_difficulty_impossible_texture;
         sf::Texture m_menu_texture;
-
+        
         //slider name textures
         sf::Texture m_slider_music_volume;
         sf::Texture m_slider_eat_volume;
         sf::Texture m_slider_lost_volume;
         sf::Texture m_slider_click_volume;
+        sf::Texture m_difficulty_texture_array[5];
 
         //main menu textures
         sf::Texture m_logo_texture;
