@@ -8,7 +8,7 @@
 #ifdef TODO_LIST
 #warning TODO Music Player
 #warning TODO Init Length Setting
-#warning TODO Make Difficulty Slider Textures
+#warning TODO Make Settings static/Make static function holding, importing and exporting settings
 #warning TODO Fun Mode/Toggle Wall And Self Crash
 #warning TODO ???Apple Slider???
 #endif
