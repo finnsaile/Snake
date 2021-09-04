@@ -1,5 +1,0 @@
-HighscoreEasy{148}
-HighscoreMedium{108}
-HighscoreHard{87}
-HighscoreExtreme{36}
-HighscoreImpossible{13}
