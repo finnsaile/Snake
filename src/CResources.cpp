@@ -45,11 +45,11 @@ DATA_PATH("/Users/finnsaile/Documents/GitHub/Snake/resources/")
     m_slider_eat_volume.loadFromFile(DATA_PATH + "Slider/EatVolume.png");
     m_slider_lost_volume.loadFromFile(DATA_PATH + "Slider/LostVolume.png");
     m_slider_click_volume.loadFromFile(DATA_PATH + "Slider/ClickVolume.png");
-    m_difficulty_texture_array[0].loadFromFile(DATA_PATH + "Settings/Easy.png");
-    m_difficulty_texture_array[1].loadFromFile(DATA_PATH + "Settings/Medium.png");
-    m_difficulty_texture_array[2].loadFromFile(DATA_PATH + "Settings/Hard.png");
-    m_difficulty_texture_array[3].loadFromFile(DATA_PATH + "Settings/Extreme.png");
-    m_difficulty_texture_array[4].loadFromFile(DATA_PATH + "Settings/Impossible.png");
+    m_difficulty_texture_array[0].loadFromFile(DATA_PATH + "Slider/EasySlider.png");
+    m_difficulty_texture_array[1].loadFromFile(DATA_PATH + "Slider/MediumSlider.png");
+    m_difficulty_texture_array[2].loadFromFile(DATA_PATH + "Slider/HardSlider.png");
+    m_difficulty_texture_array[3].loadFromFile(DATA_PATH + "Slider/ExtremeSlider.png");
+    m_difficulty_texture_array[4].loadFromFile(DATA_PATH + "Slider/ImpossibleSlider.png");
 
     //main menu textures
     m_logo_texture.loadFromFile(DATA_PATH + "Menu/SnakeLogo.png");
