@@ -169,9 +169,9 @@ void CSettings::moveSlider(const RenderWindow& renderWindow)
     }
     else if(m_active_slider_diff != nullptr)
     {
-        m_active_slider_diff->moveSlider(Mouse::getPosition(renderWindow).x);
-        //set the slider name texture to the corresponding texture from the texture array according to m_difficulty
-        m_active_slider_diff->setSliderName(m_resource.m_difficulty_texture_array[static_cast<int>(m_difficulty)]);
+        if(m_active_slider_diff->moveSlider(Mouse::getPosition(renderWindow).x))
+            //set the slider name texture to the corresponding texture from the texture array according to m_difficulty only 
+            m_active_slider_diff->setSliderName(m_resource.m_difficulty_texture_array[static_cast<int>(m_difficulty)]);
     }
 }
 
