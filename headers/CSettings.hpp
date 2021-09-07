@@ -7,42 +7,37 @@
 #include "headerEnum.hpp"
 #include "CSlider.hpp"
 #include "CResources.hpp"
+#include "CSettingsValues.hpp"
 
 class CSettings : public sf::Drawable
 {
     public:
-        CSettings(bool = false);
+        CSettings();
         virtual ~CSettings();
         WindowInstance settingsTick(sf::RenderWindow&);
-        int getVolumeMusic() const;
-        int getVolumeEat() const;
-        int getVolumeClick() const;
-        int getVolumeGameOver() const;
-        Difficulty getDifficulty() const;
     private: 
         //functions to initialise sprites, buttons and sliders
         sf::FloatRect initButton(sf::Sprite&, sf::Texture&, sf::Vector2f);
         void initSliders();
         void initTextures();
-
-        //read and write settings from/to file
-        void setSettings();
-        void getSettings();
+        void initValues();
+        void initText(sf::Text&, sf::Font&, sf::Vector2f);
+    
 
         //moves active slider
         void moveSlider(const sf::RenderWindow&);
-        
-        //bool to check if this is an active settings object
-        bool m_active_settings_b;
+    
 
         //variables used to store settings
-        int m_volume_music;
-        int m_volume_eat;
-        int m_volume_click;
-        int m_volume_game_over;
-        Difficulty m_difficulty;
+        int* m_volume_music;
+        int* m_volume_eat;
+        int* m_volume_click;
+        int* m_volume_game_over;
+        int* m_length;
+        Difficulty* m_difficulty;
 
         CResources& m_resource;
+        CSettingsValues& m_settings_values;
         //sound variables
         // sf::SoundBuffer m_click_buffer;
         sf::Sound m_click_sound;
@@ -57,6 +52,8 @@ class CSettings : public sf::Drawable
         sf::Sprite m_difficulty_sprite;
         sf::Sprite m_volume_sprite;
 
+        sf::Text m_length_text;
+
         //rectangles to save button bounds
         sf::FloatRect m_menu_bounds;
 
@@ -67,6 +64,7 @@ class CSettings : public sf::Drawable
         std::shared_ptr<CSlider<int>> m_slider_eat;
         std::shared_ptr<CSlider<int>> m_slider_click;
         std::shared_ptr<CSlider<int>> m_slider_game_over;
+        std::shared_ptr<CSlider<int>> m_slider_length;
         std::shared_ptr<CSlider<Difficulty>> m_slider_difficulty;
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

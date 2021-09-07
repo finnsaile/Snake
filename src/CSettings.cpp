@@ -2,23 +2,27 @@
 #include <iostream>
 #define LEFT_SIDE_X 300
 #define RIGHT_SIDE_X 700
+#define MAX_INIT_LENGTH (12 * 13)
 
 using namespace std;
 using namespace sf;
 
-CSettings::CSettings(bool initBool) : 
-m_active_settings_b(initBool),
-m_resource(CResources::getInstance())
+CSettings::CSettings() : 
+m_resource(CResources::getInstance()),
+m_settings_values(CSettingsValues::getInstance())
 {
     //read settings from file and write them to member variables
-    getSettings();
+    m_settings_values.getSettings();
+    initValues();
     //initialise textures (only if object is an active settings instance)
     initTextures();
 }
 
 //destructor
 CSettings::~CSettings()
-{}
+{
+    m_settings_values.setSettings();
+}
 
 WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
 {
@@ -36,7 +40,7 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
             case Event::KeyPressed:
                 switch(event.key.code)
                 {
-                    case Keyboard::Escape: setSettings(); return Menu; break;
+                    case Keyboard::Escape: return Menu; break;
                     default: break;
                 }
                 break;
@@ -65,6 +69,10 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     {
                         m_active_slider_int = m_slider_click;     
                     }
+                    else if(m_slider_length->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_int = m_slider_length;     
+                    }
                     else if(m_slider_difficulty->getSliderBounds().contains(cords.x, cords.y))
                     {
                         m_active_slider_diff = m_slider_difficulty;     
@@ -73,8 +81,7 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     {
                         //play click sound, save settings, wait and return Menu
                         m_click_sound.play(); 
-                        setSettings();
-                        sleep(milliseconds(LEFT_SIDE_X)); 
+                        sleep(milliseconds(300)); 
                         return Menu;
                     }
                 }
@@ -101,64 +108,6 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
     return Settings;
 }
 
-//write the settings to output file using the values from class members
-void CSettings::setSettings()
-{
-    ofstream output;
-    output.open(m_resource.DATA_PATH + "settings.txt");
-    output << "VolumeMusic{" << m_volume_music << "}\n";
-    output << "VolumeEat{" << m_volume_eat << "}\n";
-    output << "VolumeClick{" << m_volume_click << "}\n";
-    output << "VolumeGameOver{" << m_volume_game_over << "}\n";
-    output << "Difficulty{" << m_difficulty << "}\n";
-    output.close();
-}
-
-//retrieves settings from text file and assigns the values to the variables
-void CSettings::getSettings()
-{
-    int arr[5], fst, lst;
-    string tempString;
-    ifstream input;
-    input.open(m_resource.DATA_PATH + "settings.txt");
-    if(input.fail())
-    {
-        for(int i = 0; i < 5; i++)
-        {
-            arr[i] = 0;
-        }
-    }
-    else
-    {
-        //loop for retrieving values and writing them to temporary array
-        for(int i = 0; i < 5; i++)
-        {
-            getline(input, tempString);
-            //value is enclosed in curly brackets e.g. {20}
-            fst = tempString.find("{");
-            lst = tempString.find("}");
-            //try create substring only containing the value, convert it and write it to array
-            //if value can't be determined set it to 0
-            try 
-            {
-                arr[i] = stoi(tempString.substr(fst + 1, lst - fst));
-            }
-            catch(...)
-            {
-                arr[i] = 0;
-            }
-        } 
-    }
-
-    //initialise all values with values from array
-    m_volume_music = arr[0];
-    m_volume_eat = arr[1];
-    m_volume_click = arr[2];
-    m_volume_game_over = arr[3];
-    m_difficulty = static_cast<Difficulty>(arr[4]);
-
-    input.close();
-}
 
 //moves the slider that is currently active to the x cursor position
 void CSettings::moveSlider(const RenderWindow& renderWindow)
@@ -166,39 +115,50 @@ void CSettings::moveSlider(const RenderWindow& renderWindow)
     if(m_active_slider_int != nullptr)
     {
         m_active_slider_int->moveSlider(Mouse::getPosition(renderWindow).x);
+        m_length_text.setString(to_string(*m_length));
     }
     else if(m_active_slider_diff != nullptr)
     {
         if(m_active_slider_diff->moveSlider(Mouse::getPosition(renderWindow).x))
             //set the slider name texture to the corresponding texture from the texture array according to m_difficulty only 
-            m_active_slider_diff->setSliderName(m_resource.m_difficulty_texture_array[static_cast<int>(m_difficulty)]);
+            m_active_slider_diff->setSliderName(m_resource.m_difficulty_texture_array[static_cast<int>(*m_difficulty)]);
     }
 }
 
 //initialise all sliders
 void CSettings::initSliders()
 {
-    m_slider_music = make_shared<CSlider<int>>(&m_volume_music, RIGHT_SIDE_X, 260, m_resource.m_slider_music_volume);
-    m_slider_eat = make_shared<CSlider<int>>(&m_volume_eat, RIGHT_SIDE_X, 380, m_resource.m_slider_eat_volume);
-    m_slider_game_over = make_shared<CSlider<int>>(&m_volume_game_over, RIGHT_SIDE_X, 500, m_resource.m_slider_lost_volume);
-    m_slider_click = make_shared<CSlider<int>>(&m_volume_click, RIGHT_SIDE_X, 620, m_resource.m_slider_click_volume);
-    m_slider_difficulty = make_shared<CSlider<Difficulty>>(&m_difficulty, LEFT_SIDE_X, 260, m_resource.m_difficulty_texture_array[static_cast<int>(m_difficulty)], 0, 4);
+    m_slider_music = make_shared<CSlider<int>>(m_volume_music, RIGHT_SIDE_X, 260, m_resource.m_slider_music_volume);
+    m_slider_eat = make_shared<CSlider<int>>(m_volume_eat, RIGHT_SIDE_X, 380, m_resource.m_slider_eat_volume);
+    m_slider_game_over = make_shared<CSlider<int>>(m_volume_game_over, RIGHT_SIDE_X, 500, m_resource.m_slider_lost_volume);
+    m_slider_click = make_shared<CSlider<int>>(m_volume_click, RIGHT_SIDE_X, 620, m_resource.m_slider_click_volume);
+    m_slider_difficulty = make_shared<CSlider<Difficulty>>(m_difficulty, LEFT_SIDE_X, 260, m_resource.m_difficulty_texture_array[static_cast<int>(*m_difficulty)], 0, 4);
+    m_slider_length = make_shared<CSlider<int>>(m_length, LEFT_SIDE_X, 380, m_resource.m_slider_length, 2, MAX_INIT_LENGTH);
 }
 
 //initialises all textures if settings are active
 void CSettings::initTextures()
 {
-    if(m_active_settings_b)
-    {
         m_menu_bounds = initButton(m_menu_sprite, m_resource.m_menu_texture, Vector2f(500, 880));
         initButton(m_difficulty_sprite, m_resource.m_difficulty_texture, Vector2f(LEFT_SIDE_X, 160));
         initButton(m_volume_sprite, m_resource.m_volume_texture, Vector2f(RIGHT_SIDE_X, 160));
+        initText(m_length_text, m_resource.m_game_font, Vector2f(LEFT_SIDE_X + 30, 348));
         //set sound source and volume for click sound
         m_click_sound.setBuffer(m_resource.m_click_buffer);
-        m_click_sound.setVolume(m_volume_click);
+        m_click_sound.setVolume(*m_volume_click);
         //initialise sliders
         initSliders();
-    }
+        
+}
+
+void CSettings::initValues()
+{
+    m_volume_music = m_settings_values.getVolumeMusic();
+    m_volume_click = m_settings_values.getVolumeClick();
+    m_volume_eat = m_settings_values.getVolumeEat();
+    m_volume_game_over = m_settings_values.getVolumeGameOver();
+    m_length = m_settings_values.getLength();
+    m_difficulty = m_settings_values.getDifficulty();
 }
 
 //used to initialise a button with a texture, position and origin
@@ -212,29 +172,16 @@ FloatRect CSettings::initButton(Sprite& sprite, Texture& texture, Vector2f pos)
     return sprite.getGlobalBounds();
 }
 
-int CSettings::getVolumeMusic() const 
+void CSettings::initText(sf::Text& text, sf::Font& font, sf::Vector2f pos)
 {
-    return m_volume_music;
-}
-
-int CSettings::getVolumeEat() const
-{
-    return m_volume_eat;
-}
-
-int CSettings::getVolumeClick() const
-{
-    return m_volume_click;
-}
-
-int CSettings::getVolumeGameOver() const
-{
-    return m_volume_game_over;
-}
-
-Difficulty CSettings::getDifficulty() const
-{
-    return m_difficulty;
+    text.setFont(font);
+    text.setFillColor(Color(140, 198, 63));
+    text.setOutlineColor(Color::Black);
+    text.setOutlineThickness(1);
+    text.setCharacterSize(20);
+    text.setString(to_string(*m_length));
+    text.setOrigin(0, text.getGlobalBounds().height/2);
+    text.setPosition(pos);
 }
 
 //draws all the sprites, buttons and sliders
@@ -244,7 +191,10 @@ void CSettings::draw(RenderTarget& target, RenderStates states) const
     target.draw(*m_slider_eat);
     target.draw(*m_slider_click);
     target.draw(*m_slider_game_over);
+    target.draw(*m_slider_length);
     target.draw(*m_slider_difficulty);
+
+    target.draw(m_length_text);
 
     target.draw(m_difficulty_sprite);
     target.draw(m_volume_sprite);
