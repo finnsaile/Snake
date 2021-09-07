@@ -8,13 +8,15 @@ using namespace std;
 
 //constructor takes new head position as argument 
 //and initializes new node as head, snakeState(direction) and changedState
-CSnake::CSnake(int init_x, int init_y, unsigned int length): 
-head(new CNode(init_y, init_x, W))
+CSnake::CSnake(int init_x, int init_y, unsigned int length, unsigned int food_amount): 
+head(new CNode(init_y, init_x, W)),
+m_settings_values(CSettingsValues::getInstance())
 {  
     //tail = head (only 1 node exists)
     head->prev = NULL;
     tail = head;
     initSnake(length);
+    initFood(food_amount);
 }
 
 CSnake::~CSnake()
@@ -29,7 +31,7 @@ CSnake::~CSnake()
 }
 
 //function to add head for movement/growth food pointer as arguments
-void CSnake::addHead(CFood& food, WindowInstance& new_instance)
+bool CSnake::addHead(WindowInstance& new_instance)
 {
     //change texture of old head to normal body texture
 
@@ -71,11 +73,10 @@ void CSnake::addHead(CFood& food, WindowInstance& new_instance)
     FloatRect body_bound;
 
     //if the head collides with the food 
-    if(head_bound.intersects(food.getFoodBounds()))
+    if(checkFoodBounds(head_bound))
     {
         tail->changeTexture(m_snake_state, true);
-        //food gets relocated
-        food.gotEaten(head);
+        return true;
     }
     else
     {
@@ -92,8 +93,24 @@ void CSnake::addHead(CFood& food, WindowInstance& new_instance)
             if(head_bound.intersects(body_bound)) new_instance = GameOverMenu;
         }
     }
+    return false;
 }
 
+bool CSnake::checkFoodBounds(FloatRect& head_bound)
+{
+    bool return_value = false;
+    for_each(m_food_vec.begin(), m_food_vec.end(), 
+        [&](CFood& food) 
+        {
+            if(food.getFoodBounds().intersects(head_bound))
+            {
+                food.gotEaten(head, m_food_vec);
+                return_value = true;
+            }
+
+        });
+    return return_value;
+}
 void CSnake::initSnake(unsigned int length)
 {   
     unsigned int tail_length = length - 1;
@@ -130,6 +147,14 @@ void CSnake::initSnake(unsigned int length)
     tail = temp;
 }
 
+void CSnake::initFood(const unsigned int food_amount)
+{
+    for(int i = 0; i < food_amount; i++)
+    {
+        m_food_vec.push_back(CFood(*m_settings_values.getDifficulty(), this->head, m_food_vec));
+    }
+}
+
 //function that removes the tail node to make it seem like the snake is moving
 void CSnake::removeTail()
 {
@@ -148,6 +173,8 @@ void CSnake::draw(RenderTarget& target, RenderStates states) const
         target.draw(temp->m_node);
         temp = temp->prev;
     }
+
+    for_each(m_food_vec.begin(), m_food_vec.end(), [&](CFood food) {target.draw(food);});
 }
 
 //returns state(direction) of snake
