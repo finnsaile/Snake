@@ -47,6 +47,7 @@ class CResources
         sf::Texture m_slider_eat_volume;
         sf::Texture m_slider_lost_volume;
         sf::Texture m_slider_click_volume;
+        sf::Texture m_slider_length;
         sf::Texture m_difficulty_texture_array[5];
 
         //main menu textures
