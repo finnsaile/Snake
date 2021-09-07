@@ -3,7 +3,7 @@
 #include <iostream>
 #include "CSnake.hpp"
 #include "CGrid.hpp"
-#include "CSettings.hpp"
+#include "CSettingsValues.hpp"
 
 class CGame : public sf::Drawable
 {
@@ -12,10 +12,10 @@ class CGame : public sf::Drawable
         ~CGame();
         WindowInstance gameTick(sf::RenderWindow&);
     private:
-        CSnake m_snake;
+        std::shared_ptr<CSnake> m_snake;
         std::shared_ptr<CFood> m_food;
         CGrid m_grid;
-        CSettings m_settings;
+        CSettingsValues& m_settings_values;
 
         float m_difficulty_f;
 

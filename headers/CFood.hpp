@@ -5,8 +5,8 @@
 #include <fstream>
 #include "CCounter.hpp"
 #include "CNode.hpp"
-#include "CSettings.hpp"
 #include "CResources.hpp"
+#include "CSettingsValues.hpp"
 
 //food class to create food
 class CFood : public sf::Drawable
@@ -22,9 +22,8 @@ class CFood : public sf::Drawable
         int m_pos_x;
         int m_pos_y;
 
-        CResources& m_resource;
-        
-        CSettings m_settings;
+        CResources& m_resource;    
+        CSettingsValues& m_settings_values;
 
         CCounter m_counter;
         CCounter m_highscore;

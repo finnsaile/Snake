@@ -8,11 +8,12 @@ using namespace sf;
 using namespace std;
 
 //game constructor initializes snake, food pointer and grid
-CGame::CGame(): 
-m_snake(START_POS_X, START_POS_Y, 2),
-m_difficulty_f(convertDifficulty(m_settings.getDifficulty()))
+CGame::CGame():
+m_settings_values(CSettingsValues::getInstance()), 
+m_difficulty_f(convertDifficulty(*m_settings_values.getDifficulty()))
 {
-    m_food = make_shared<CFood>(m_settings.getDifficulty(), m_snake.getHead());
+    m_snake = make_shared<CSnake>(START_POS_X, START_POS_Y, *m_settings_values.getLength()),
+    m_food = make_shared<CFood>(*m_settings_values.getDifficulty(), m_snake->getHead());
 }
 
 CGame::~CGame()
@@ -24,7 +25,7 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
     //chang bool to determine if menu should be opened
     m_new_instance = Game;
     //eventloop
-     if(m_snake.getChangedThisTick() == false)
+     if(m_snake->getChangedThisTick() == false)
      {
         Event event;
         while(renderWindow.pollEvent(event))
@@ -40,10 +41,10 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
                          switch(event.key.code)
                         {
                             //W A S D for movement. Can't go in opposite direction
-                            case Keyboard::W: if (m_snake.getState() != S) m_snake.setState(W); break;
-                            case Keyboard::D: if (m_snake.getState() != A) m_snake.setState(D); break;
-                            case Keyboard::S: if (m_snake.getState() != W) m_snake.setState(S); break;
-                            case Keyboard::A: if (m_snake.getState() != D) m_snake.setState(A); break;
+                            case Keyboard::W: if (m_snake->getState() != S) m_snake->setState(W); break;
+                            case Keyboard::D: if (m_snake->getState() != A) m_snake->setState(D); break;
+                            case Keyboard::S: if (m_snake->getState() != W) m_snake->setState(S); break;
+                            case Keyboard::A: if (m_snake->getState() != D) m_snake->setState(A); break;
                             //if escape is pressed m_new_instance is set to true
                             case Keyboard::Escape:  m_new_instance = BreakMenu; break;
                             default: break;
@@ -59,9 +60,9 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
             && m_new_instance == Game)
         {
             //if addHead returns true menu is opened
-            m_snake.addHead(*m_food, m_new_instance);
+            m_snake->addHead(*m_food, m_new_instance);
             m_clock.restart();
-            m_snake.setChangedThisTick(false);
+            m_snake->setChangedThisTick(false);
         }
     return m_new_instance;
 }
@@ -70,7 +71,7 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
 void CGame::draw(RenderTarget& target, RenderStates states) const
 {
     target.draw(m_grid);
-    target.draw(m_snake);
+    target.draw(*m_snake);
     target.draw(*m_food);
 }
 

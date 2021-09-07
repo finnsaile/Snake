@@ -8,11 +8,12 @@ CFood::CFood(Difficulty difficulty, CNode* head):
 m_counter(0, 960, 35, false),
 m_highscore(initHighscore(difficulty), 40, 35, true),
 m_difficulty(difficulty),
-m_resource(CResources::getInstance())
+m_resource(CResources::getInstance()),
+m_settings_values(CSettingsValues::getInstance())
 {
     //set attributes for crunch sound
     m_crunch_sound.setBuffer(m_resource.m_crunch_buffer);
-    m_crunch_sound.setVolume(m_settings.getVolumeEat());
+    m_crunch_sound.setVolume(*m_settings_values.getVolumeEat());
     //set attributes of food sprite
     m_food_sprite.setTexture(m_resource.m_food_texture);
     //food gets spawned at random position in window

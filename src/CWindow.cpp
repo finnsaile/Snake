@@ -5,7 +5,8 @@ using namespace sf;
 //constructor initializes game/menuInstance with nullptr and
 //windowInstance with Menu so Menu is opend when object is created
 CWindow::CWindow() :
-m_resource(CResources::getInstance())
+m_resource(CResources::getInstance()),
+m_settings_values(CSettingsValues::getInstance())
 {
     m_resource.m_game_music.setLoop(true);
 }
@@ -57,7 +58,7 @@ void CWindow::windowTick(RenderWindow& renderWindow)
                 m_menu_instance = nullptr;
                 m_game_instance = new CGame; 
                 //start playing gamemusic and set volume
-                m_resource.m_game_music.setVolume(m_settings->getVolumeMusic());
+                m_resource.m_game_music.setVolume(*m_settings_values.getVolumeMusic());
                 m_resource.m_game_music.play();
             }
             else
@@ -86,17 +87,12 @@ void CWindow::windowTick(RenderWindow& renderWindow)
                 //delete menuInstance and create new Settings Instance
                 delete m_menu_instance;
                 m_menu_instance = nullptr; 
-                m_settings_instance = new CSettings(true);
+                m_settings_instance = new CSettings;
             }
             else
             {
                 //if menuInstance exists get bool from menuTick to determine whether or not to change the Instance
                 m_new_instance = m_settings_instance->settingsTick(renderWindow);
-                if(m_new_instance != Settings)
-                {
-                    delete m_settings;
-                    m_settings = new CSettings(false);
-                }
             }
             break;
         
