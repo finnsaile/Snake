@@ -1,5 +1,8 @@
 #include "../headers/CSettingsValues.hpp"
 
+#define MAX_INIT_LENGTH ((12 * 13) + 1)
+#define MAX_FOOD_COUNT 10
+
 using namespace std;
 
 CSettingsValues CSettingsValues::m_instance;
@@ -77,6 +80,11 @@ void CSettingsValues::getSettings()
     m_difficulty = static_cast<Difficulty>(arr[6]);
 
     input.close();
+    if(m_length > MAX_INIT_LENGTH) m_length = MAX_INIT_LENGTH;
+    else if(m_length < 2) m_length = 2;
+
+    if(m_food_count < 1) m_food_count = 1;
+    else if(m_food_count > MAX_FOOD_COUNT) m_food_count = MAX_FOOD_COUNT;
 }
 
 CSettingsValues& CSettingsValues::getInstance()

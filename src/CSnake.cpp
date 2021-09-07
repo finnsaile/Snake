@@ -2,14 +2,14 @@
 
 #define TILE_SIZE 40
 #define GRID_SIZE 25
-#define MAX_INIT_LENGTH (12 * 13)
+#define MAX_INIT_LENGTH ((12 * 13) + 1)
 #define MAX_FOOD_COUNT 10
 using namespace sf;
 using namespace std;
 
 //constructor takes new head position as argument 
 //and initializes new node as head, snakeState(direction) and changedState
-CSnake::CSnake(int init_x, int init_y, unsigned int length, unsigned int food_amount): 
+CSnake::CSnake(int init_x, int init_y, unsigned int length, unsigned int food_count): 
 head(new CNode(init_y, init_x, W)),
 m_settings_values(CSettingsValues::getInstance())
 {  
@@ -17,7 +17,7 @@ m_settings_values(CSettingsValues::getInstance())
     head->prev = NULL;
     tail = head;
     initSnake(length);
-    initFood(food_amount);
+    initFood(food_count);
 }
 
 CSnake::~CSnake()
@@ -118,8 +118,8 @@ void CSnake::initSnake(unsigned int length)
     CNode* temp = head;
     SnakeState state;
 
-    if(tail_length > MAX_INIT_LENGTH) tail_length = MAX_INIT_LENGTH;
-    else if(tail_length < 2) tail_length = 2;
+    if(tail_length > MAX_INIT_LENGTH - 1) tail_length = MAX_INIT_LENGTH - 1;
+    else if(tail_length < 1) tail_length = 1;
 
     for(int i = 0; i < tail_length; i++)
     {   
@@ -148,11 +148,11 @@ void CSnake::initSnake(unsigned int length)
     tail = temp;
 }
 
-void CSnake::initFood(unsigned int food_amount)
+void CSnake::initFood(unsigned int food_count)
 {
-    if(food_amount < 1) food_amount = 1;
-    else if(food_amount > MAX_FOOD_COUNT) food_amount = MAX_FOOD_COUNT;
-    for(int i = 0; i < food_amount; i++)
+    if(food_count < 1) food_count = 1;
+    else if(food_count > MAX_FOOD_COUNT) food_count = MAX_FOOD_COUNT;
+    for(int i = 0; i < food_count; i++)
     {
         m_food_vec.push_back(CFood(*m_settings_values.getDifficulty(), this->head, m_food_vec));
     }
