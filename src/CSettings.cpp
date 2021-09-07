@@ -73,6 +73,10 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     {
                         m_active_slider_int = m_slider_length;     
                     }
+                    else if(m_slider_food_count->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_int = m_slider_food_count;     
+                    }
                     else if(m_slider_difficulty->getSliderBounds().contains(cords.x, cords.y))
                     {
                         m_active_slider_diff = m_slider_difficulty;     
@@ -114,26 +118,33 @@ void CSettings::moveSlider(const RenderWindow& renderWindow)
 {
     if(m_active_slider_int != nullptr)
     {
-        m_active_slider_int->moveSlider(Mouse::getPosition(renderWindow).x);
-        m_length_text.setString(to_string(*m_length));
+        if(m_active_slider_int->moveSlider(Mouse::getPosition(renderWindow).x))
+        {
+            if(m_active_slider_int == m_slider_length)
+                m_active_slider_int->setSliderLabel("Length:" + to_string(*m_length));
+            else if(m_active_slider_int == m_slider_food_count)
+                m_active_slider_int->setSliderLabel("Apples:" + to_string(*m_food_count));
+        }
+        
     }
     else if(m_active_slider_diff != nullptr)
     {
         if(m_active_slider_diff->moveSlider(Mouse::getPosition(renderWindow).x))
             //set the slider name texture to the corresponding texture from the texture array according to m_difficulty only 
-            m_active_slider_diff->setSliderName(m_resource.m_difficulty_texture_array[static_cast<int>(*m_difficulty)]);
+            m_active_slider_diff->setSliderLabel(difficulty_string_arr[static_cast<int>(*m_difficulty)]);
     }
 }
 
 //initialise all sliders
 void CSettings::initSliders()
 {
-    m_slider_music = make_shared<CSlider<int>>(m_volume_music, RIGHT_SIDE_X, 260, m_resource.m_slider_music_volume);
-    m_slider_eat = make_shared<CSlider<int>>(m_volume_eat, RIGHT_SIDE_X, 380, m_resource.m_slider_eat_volume);
-    m_slider_game_over = make_shared<CSlider<int>>(m_volume_game_over, RIGHT_SIDE_X, 500, m_resource.m_slider_lost_volume);
-    m_slider_click = make_shared<CSlider<int>>(m_volume_click, RIGHT_SIDE_X, 620, m_resource.m_slider_click_volume);
-    m_slider_difficulty = make_shared<CSlider<Difficulty>>(m_difficulty, LEFT_SIDE_X, 260, m_resource.m_difficulty_texture_array[static_cast<int>(*m_difficulty)], 0, 4);
-    m_slider_length = make_shared<CSlider<int>>(m_length, LEFT_SIDE_X, 380, m_resource.m_slider_length, 2, MAX_INIT_LENGTH);
+    m_slider_music = make_shared<CSlider<int>>(m_volume_music, RIGHT_SIDE_X, 260, "Music");
+    m_slider_eat = make_shared<CSlider<int>>(m_volume_eat, RIGHT_SIDE_X, 380, "Eat");
+    m_slider_game_over = make_shared<CSlider<int>>(m_volume_game_over, RIGHT_SIDE_X, 500, "Lost");
+    m_slider_click = make_shared<CSlider<int>>(m_volume_click, RIGHT_SIDE_X, 620, "Click");
+    m_slider_difficulty = make_shared<CSlider<Difficulty>>(m_difficulty, LEFT_SIDE_X, 260, difficulty_string_arr[static_cast<int>(*m_difficulty)], 0, 4);
+    m_slider_length = make_shared<CSlider<int>>(m_length, LEFT_SIDE_X, 380, "Length:" + to_string(*m_length), 2, MAX_INIT_LENGTH);
+    m_slider_food_count = make_shared<CSlider<int>>(m_food_count, LEFT_SIDE_X, 500, "Apples:" + to_string(*m_food_count), 1, 10);
 }
 
 //initialises all textures if settings are active
@@ -142,7 +153,6 @@ void CSettings::initTextures()
         m_menu_bounds = initButton(m_menu_sprite, m_resource.m_menu_texture, Vector2f(500, 880));
         initButton(m_difficulty_sprite, m_resource.m_difficulty_texture, Vector2f(LEFT_SIDE_X, 160));
         initButton(m_volume_sprite, m_resource.m_volume_texture, Vector2f(RIGHT_SIDE_X, 160));
-        initText(m_length_text, m_resource.m_game_font, Vector2f(LEFT_SIDE_X + 30, 348));
         //set sound source and volume for click sound
         m_click_sound.setBuffer(m_resource.m_click_buffer);
         m_click_sound.setVolume(*m_volume_click);
@@ -158,6 +168,7 @@ void CSettings::initValues()
     m_volume_eat = m_settings_values.getVolumeEat();
     m_volume_game_over = m_settings_values.getVolumeGameOver();
     m_length = m_settings_values.getLength();
+    m_food_count = m_settings_values.getFoodCount();
     m_difficulty = m_settings_values.getDifficulty();
 }
 
@@ -172,18 +183,6 @@ FloatRect CSettings::initButton(Sprite& sprite, Texture& texture, Vector2f pos)
     return sprite.getGlobalBounds();
 }
 
-void CSettings::initText(sf::Text& text, sf::Font& font, sf::Vector2f pos)
-{
-    text.setFont(font);
-    text.setFillColor(Color(140, 198, 63));
-    text.setOutlineColor(Color::Black);
-    text.setOutlineThickness(1);
-    text.setCharacterSize(20);
-    text.setString(to_string(*m_length));
-    text.setOrigin(0, text.getGlobalBounds().height/2);
-    text.setPosition(pos);
-}
-
 //draws all the sprites, buttons and sliders
 void CSettings::draw(RenderTarget& target, RenderStates states) const
 {
@@ -193,8 +192,7 @@ void CSettings::draw(RenderTarget& target, RenderStates states) const
     target.draw(*m_slider_game_over);
     target.draw(*m_slider_length);
     target.draw(*m_slider_difficulty);
-
-    target.draw(m_length_text);
+    target.draw(*m_slider_food_count);
 
     target.draw(m_difficulty_sprite);
     target.draw(m_volume_sprite);
