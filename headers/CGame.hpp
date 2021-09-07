@@ -4,6 +4,7 @@
 #include "CSnake.hpp"
 #include "CGrid.hpp"
 #include "CSettingsValues.hpp"
+#include "CResources.hpp"
 
 class CGame : public sf::Drawable
 {
@@ -12,15 +13,27 @@ class CGame : public sf::Drawable
         ~CGame();
         WindowInstance gameTick(sf::RenderWindow&);
     private:
-        std::shared_ptr<CSnake> m_snake;
-        std::shared_ptr<CFood> m_food;
-        CGrid m_grid;
-        CSettingsValues& m_settings_values;
-
         float m_difficulty_f;
+   
+        WindowInstance m_new_instance;
+        CSettingsValues& m_settings_values;
+        CResources& m_resource;
+        CGrid m_grid;
+        
+        std::shared_ptr<CSnake> m_snake;  
+
+        CCounter m_counter;
+        CCounter m_highscore;
+
+        unsigned int m_highscore_easy;
+        unsigned int m_highscore_medium;
+        unsigned int m_highscore_hard;
+        unsigned int m_highscore_extreme;
+        unsigned int m_highscore_impossible;
 
         sf::Clock m_clock;
-        WindowInstance m_new_instance;
+        
+        unsigned int initHighscore(Difficulty);
         float convertDifficulty(Difficulty);
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
