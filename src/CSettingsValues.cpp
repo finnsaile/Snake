@@ -24,6 +24,7 @@ void CSettingsValues::setSettings()
     output << "VolumeClick{" << m_volume_click << "}\n";
     output << "VolumeGameOver{" << m_volume_game_over << "}\n";
     output << "Length{" << m_length << "}\n";
+    output << "FoodCount{" << m_food_count << "}\n";
     output << "Difficulty{" << static_cast<int>(m_difficulty) << "}\n";
     output.close();
 }
@@ -31,13 +32,13 @@ void CSettingsValues::setSettings()
 //retrieves settings from text file and assigns the values to the variables
 void CSettingsValues::getSettings()
 {
-    int arr[6], fst, lst;
+    int arr[7], fst, lst;
     string tempString;
     ifstream input;
     input.open(m_resource.DATA_PATH + "settings.txt");
     if(input.fail())
     {
-        for(int i = 0; i < 6; i++)
+        for(int i = 0; i < 7; i++)
         {
             arr[i] = 0;
         }
@@ -45,7 +46,7 @@ void CSettingsValues::getSettings()
     else
     {
         //loop for retrieving values and writing them to temporary array
-        for(int i = 0; i < 6; i++)
+        for(int i = 0; i < 7; i++)
         {
             getline(input, tempString);
             //value is enclosed in curly brackets e.g. {20}
@@ -59,7 +60,7 @@ void CSettingsValues::getSettings()
             }
             catch(...)
             {
-                for(int j = 0; j < 6; j++)
+                for(int j = 0; j < 7; j++)
                     arr[j] = 0;
                 break;
             }
@@ -72,7 +73,8 @@ void CSettingsValues::getSettings()
     m_volume_click = arr[2];
     m_volume_game_over = arr[3];
     m_length = arr[4];
-    m_difficulty = static_cast<Difficulty>(arr[5]);
+    m_food_count = arr[5];
+    m_difficulty = static_cast<Difficulty>(arr[6]);
 
     input.close();
 }
@@ -105,6 +107,11 @@ int* CSettingsValues::getVolumeGameOver()
 int* CSettingsValues::getLength()
 {
     return &m_length;
+}
+
+int* CSettingsValues::getFoodCount()
+{
+    return &m_food_count;
 }
 
 Difficulty* CSettingsValues::getDifficulty() 

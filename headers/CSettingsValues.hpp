@@ -15,6 +15,7 @@ class CSettingsValues
         int* getVolumeClick();
         int* getVolumeGameOver();
         int* getLength();
+        int* getFoodCount();
         Difficulty* getDifficulty();
 
         void setSettings();
@@ -32,5 +33,6 @@ class CSettingsValues
         int m_volume_click;
         int m_volume_game_over;
         int m_length;
+        int m_food_count;
         Difficulty m_difficulty;
 };
