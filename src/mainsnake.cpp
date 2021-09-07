@@ -7,9 +7,7 @@
 
 #ifdef TODO_LIST
 #warning TODO Music Player
-#warning TODO Change Slider Names from Textures to Text
-#warning TODO Fun Mode/Toggle Wall And Self Crashw
-#warning TODO ???Apple Slider???
+#warning TODO Fun Mode/Toggle Wall And Self Crash
 #endif
 
 
