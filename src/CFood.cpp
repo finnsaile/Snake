@@ -4,9 +4,7 @@ using namespace sf;
 using namespace std;
 
 //food constructor
-CFood::CFood(Difficulty difficulty, CNode* head): 
-m_counter(0, 960, 35, false),
-m_highscore(initHighscore(difficulty), 40, 35, true),
+CFood::CFood(Difficulty difficulty, CNode* head, vector<CFood>& food_vec): 
 m_difficulty(difficulty),
 m_resource(CResources::getInstance()),
 m_settings_values(CSettingsValues::getInstance())
@@ -17,39 +15,18 @@ m_settings_values(CSettingsValues::getInstance())
     //set attributes of food sprite
     m_food_sprite.setTexture(m_resource.m_food_texture);
     //food gets spawned at random position in window
-    setRandCoordinates(head);
+    setRandCoordinates(head, food_vec);
 }
 
 CFood::~CFood()
-{
-    //get new highscore
-    switch(m_difficulty)
-    {
-        case Easy: m_highscore_easy = m_highscore.getScore(); break;
-        case Medium: m_highscore_medium = m_highscore.getScore(); break;
-        case Hard: m_highscore_hard = m_highscore.getScore(); break;
-        case Extreme: m_highscore_extreme = m_highscore.getScore(); break;
-        case Impossible: m_highscore_impossible = m_highscore.getScore(); break;
-    }
+{}
 
-    //write all highscores to file
-    ofstream output;
-    output.open(m_resource.DATA_PATH + "highscore.txt");
-    output << "HighscoreEasy{" << m_highscore_easy << "}\n";
-    output << "HighscoreMedium{" << m_highscore_medium << "}\n";
-    output << "HighscoreHard{" << m_highscore_hard << "}\n";
-    output << "HighscoreExtreme{" << m_highscore_extreme << "}\n";
-    output << "HighscoreImpossible{" << m_highscore_impossible << "}\n";
-    output.close();
-}
 
 //simple draw function
 void CFood::draw(RenderTarget& target, RenderStates states) const
 {   
     //draws counter and food
     target.draw(m_food_sprite);
-    target.draw(m_counter);
-    target.draw(m_highscore);
 };
 
 //returns food bounds for collition check
@@ -59,7 +36,7 @@ FloatRect CFood::getFoodBounds()
 }
 
 //function is called when food gets eaten
-void CFood::gotEaten(CNode* head)
+void CFood::gotEaten(CNode* head, vector<CFood>& food_vec)
 {
     //crunch sound
     m_crunch_sound.play();
@@ -67,20 +44,14 @@ void CFood::gotEaten(CNode* head)
     CNode *temp = head;
     bool collition;
 
-    //counter gets increased by one and new coordinates are set
-    if(m_counter.getScore() >= m_highscore.getScore())
-    {
-        m_highscore.increaseScore(1);
-    }
-    m_counter.increaseScore(1);
-    setRandCoordinates(head);
+    setRandCoordinates(head, food_vec);
 }
 
 //set coordinates for new food
-void CFood::setRandCoordinates(CNode* head)
+void CFood::setRandCoordinates(CNode* head, vector<CFood>& food_vec)
 {
     //food bound of new food location and body bound for snake
-    FloatRect food_bound, body_bound;
+    FloatRect body_bound;
     bool collition;
     CNode* temp;
     
@@ -113,64 +84,17 @@ void CFood::setRandCoordinates(CNode* head)
             //pointer points to next node
             temp = temp->next;
         }
+        int col_count = 0;
+        for_each(food_vec.begin(), food_vec.end(), 
+            [&](CFood& food)
+            {
+                if(getFoodBounds().intersects(food.getFoodBounds()))
+                col_count += 1;
+            });
+        
+        if(col_count >= 2)
+            collition = true;
     //loop itterates as long as collition is true        
     }while(collition == true);  
 }
 
-//initialise the highscore from text file
-unsigned int CFood::initHighscore(Difficulty difficulty)
-{
-    int arr[5], fst, lst;
-    string tempString;
-
-    ifstream input;
-    input.open(m_resource.DATA_PATH + "highscore.txt");
-    if(input.fail())
-    {
-        for(int i = 0; i < 5; i++)
-        {
-            arr[i] = 0;
-        }
-    }
-    else
-    {
-        for(int i = 0; i < 5; i++)
-        {
-            getline(input, tempString);
-            //value is enclosed in curly brackets e.g. {20}
-            fst = tempString.find("{");
-            lst = tempString.find("}");
-            //create substring only containing the value, convert it and write it to array
-            //if value can't be determined set it to 0
-            try 
-            {
-                arr[i] = stoi(tempString.substr(fst + 1, lst - fst));
-            }
-            catch(...)
-            {
-                arr[i] = 0;
-            }
-        }
-    }
-    //loop for retrieving values and writing them to temporary array
-    
-    
-    //assign values from array to respective highscore variables
-    m_highscore_easy = arr[0];
-    m_highscore_medium = arr[1];
-    m_highscore_hard = arr[2];
-    m_highscore_extreme = arr[3];
-    m_highscore_impossible = arr[4];
-
-    input.close();
-
-    //return difficulty value for highscore
-    switch(difficulty)
-    {
-        case Easy: return m_highscore_easy;
-        case Medium: return m_highscore_medium;
-        case Hard: return m_highscore_hard;
-        case Extreme: return m_highscore_extreme;
-        case Impossible: return m_highscore_impossible;
-    }
-}
