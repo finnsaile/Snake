@@ -3,6 +3,7 @@
 #define LEFT_SIDE_X 300
 #define RIGHT_SIDE_X 700
 #define MAX_INIT_LENGTH (12 * 13)
+#define MAX_FOOD_COUNT 10
 
 using namespace std;
 using namespace sf;
@@ -144,7 +145,7 @@ void CSettings::initSliders()
     m_slider_click = make_shared<CSlider<int>>(m_volume_click, RIGHT_SIDE_X, 620, "Click");
     m_slider_difficulty = make_shared<CSlider<Difficulty>>(m_difficulty, LEFT_SIDE_X, 260, difficulty_string_arr[static_cast<int>(*m_difficulty)], 0, 4);
     m_slider_length = make_shared<CSlider<int>>(m_length, LEFT_SIDE_X, 380, "Length:" + to_string(*m_length), 2, MAX_INIT_LENGTH);
-    m_slider_food_count = make_shared<CSlider<int>>(m_food_count, LEFT_SIDE_X, 500, "Apples:" + to_string(*m_food_count), 1, 10);
+    m_slider_food_count = make_shared<CSlider<int>>(m_food_count, LEFT_SIDE_X, 500, "Apples:" + to_string(*m_food_count), 1, MAX_FOOD_COUNT);
 }
 
 //initialises all textures if settings are active

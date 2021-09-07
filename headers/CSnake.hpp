@@ -36,6 +36,6 @@ class CSnake : public sf::Drawable
         bool checkFoodBounds(sf::FloatRect&);
 
         void initSnake(const unsigned int);
-        void initFood(const unsigned int);
+        void initFood(unsigned int);
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

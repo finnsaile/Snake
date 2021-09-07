@@ -3,6 +3,7 @@
 #define TILE_SIZE 40
 #define GRID_SIZE 25
 #define MAX_INIT_LENGTH (12 * 13)
+#define MAX_FOOD_COUNT 10
 using namespace sf;
 using namespace std;
 
@@ -107,7 +108,6 @@ bool CSnake::checkFoodBounds(FloatRect& head_bound)
                 food.gotEaten(head, m_food_vec);
                 return_value = true;
             }
-
         });
     return return_value;
 }
@@ -119,6 +119,7 @@ void CSnake::initSnake(unsigned int length)
     SnakeState state;
 
     if(tail_length > MAX_INIT_LENGTH) tail_length = MAX_INIT_LENGTH;
+    else if(tail_length < 2) tail_length = 2;
 
     for(int i = 0; i < tail_length; i++)
     {   
@@ -147,8 +148,10 @@ void CSnake::initSnake(unsigned int length)
     tail = temp;
 }
 
-void CSnake::initFood(const unsigned int food_amount)
+void CSnake::initFood(unsigned int food_amount)
 {
+    if(food_amount < 1) food_amount = 1;
+    else if(food_amount > MAX_FOOD_COUNT) food_amount = MAX_FOOD_COUNT;
     for(int i = 0; i < food_amount; i++)
     {
         m_food_vec.push_back(CFood(*m_settings_values.getDifficulty(), this->head, m_food_vec));
