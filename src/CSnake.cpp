@@ -51,16 +51,21 @@ bool CSnake::addHead(WindowInstance& new_instance)
 
     //** CRASH WHEN HITTING WALL **//
     //if new head is created outside the window(player crashed into border) true is returned
-    if( temp_x < 0|
+    if(*m_settings_values.getWallCrash() == true)
+    {
+        if( temp_x < 0|
         temp_x >= 1000|
         temp_y < 0|
         temp_y >= 1000) new_instance = GameOverMenu;
-
+    }
     //** DON'T CRASH WHEN HITTING WALL **//
-    // if(temp_x < 0) temp_x += 1000;
-    // else if(temp_x >= 1000) temp_x -= 1000;
-    // else if(temp_y < 0) temp_y += 1000;
-    // else if(temp_y >= 1000) temp_y -= 1000;
+    else
+    {
+        if(temp_x < 0) temp_x += 1000;
+        else if(temp_x >= 1000) temp_x -= 1000;
+        else if(temp_y < 0) temp_y += 1000;
+        else if(temp_y >= 1000) temp_y -= 1000;
+    }
 
     //new head gets created at calculated coordinates. All pointers are set to link the head to the list
     head->prev = new CNode(temp_y, temp_x, m_snake_state);
@@ -68,7 +73,6 @@ bool CSnake::addHead(WindowInstance& new_instance)
     head = head->prev;
     head->prev = NULL;
     
-
     //bounds for head and body to check for collition when creating the new head
     FloatRect head_bound = head->m_node.getGlobalBounds();
     FloatRect body_bound;
@@ -86,13 +90,16 @@ bool CSnake::addHead(WindowInstance& new_instance)
         removeTail();
 
         //** GAME OVER WHEN SNAKE HITS SNAKE **//
-        CNode* temp = head;
-        while(temp->next != NULL)
+        if(*m_settings_values.getSelfCrash() == true)
         {
-            temp = temp->next;
-            body_bound = temp->m_node.getGlobalBounds();
-            if(head_bound.intersects(body_bound)) new_instance = GameOverMenu;
-        }
+            CNode* temp = head;
+            while(temp->next != NULL)
+            {
+                temp = temp->next;
+                body_bound = temp->m_node.getGlobalBounds();
+                if(head_bound.intersects(body_bound)) new_instance = GameOverMenu;
+            }
+        }      
     }
     return false;
 }
@@ -111,6 +118,7 @@ bool CSnake::checkFoodBounds(FloatRect& head_bound)
         });
     return return_value;
 }
+
 void CSnake::initSnake(unsigned int length)
 {   
     unsigned int tail_length = length - 1;

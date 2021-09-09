@@ -78,6 +78,14 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     {
                         m_active_slider_int = m_slider_food_count;     
                     }
+                    else if(m_slider_wall_crash->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_bool = m_slider_wall_crash;     
+                    }
+                    else if(m_slider_self_crash->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_bool = m_slider_self_crash;     
+                    }
                     else if(m_slider_difficulty->getSliderBounds().contains(cords.x, cords.y))
                     {
                         m_active_slider_diff = m_slider_difficulty;     
@@ -101,6 +109,8 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                         m_active_slider_int = nullptr; 
                     else if(m_active_slider_diff != nullptr)
                         m_active_slider_diff = nullptr;
+                    else if(m_active_slider_bool != nullptr)
+                        m_active_slider_bool = nullptr;
                 }
 
                 break;
@@ -132,7 +142,18 @@ void CSettings::moveSlider(const RenderWindow& renderWindow)
     {
         if(m_active_slider_diff->moveSlider(Mouse::getPosition(renderWindow).x))
             //set the slider name texture to the corresponding texture from the texture array according to m_difficulty only 
-            m_active_slider_diff->setSliderLabel(difficulty_string_arr[static_cast<int>(*m_difficulty)]);
+            m_active_slider_diff->setSliderLabel(m_difficulty_string_arr[static_cast<int>(*m_difficulty)]);
+    }
+    else if(m_active_slider_bool != nullptr)
+    {
+        if(m_active_slider_bool->moveSlider(Mouse::getPosition(renderWindow).x))
+        {
+            if(m_active_slider_bool == m_slider_wall_crash)
+                m_active_slider_bool->setSliderLabel("WallCrash:" + m_on_off_string_arr[static_cast<int>(*m_wall_crash_b)]);
+            else if(m_active_slider_bool == m_slider_self_crash)
+                m_active_slider_bool->setSliderLabel("SelfCrash:" + m_on_off_string_arr[static_cast<int>(*m_self_crash_b)]);
+            
+        }
     }
 }
 
@@ -143,9 +164,11 @@ void CSettings::initSliders()
     m_slider_eat = make_shared<CSlider<int>>(m_volume_eat, RIGHT_SIDE_X, 380, "Eat");
     m_slider_game_over = make_shared<CSlider<int>>(m_volume_game_over, RIGHT_SIDE_X, 500, "Lost");
     m_slider_click = make_shared<CSlider<int>>(m_volume_click, RIGHT_SIDE_X, 620, "Click");
-    m_slider_difficulty = make_shared<CSlider<Difficulty>>(m_difficulty, LEFT_SIDE_X, 260, difficulty_string_arr[static_cast<int>(*m_difficulty)], 0, 4);
+    m_slider_difficulty = make_shared<CSlider<Difficulty>>(m_difficulty, LEFT_SIDE_X, 260, m_difficulty_string_arr[static_cast<int>(*m_difficulty)], 0, 4);
     m_slider_length = make_shared<CSlider<int>>(m_length, LEFT_SIDE_X, 380, "Length:" + to_string(*m_length), 2, MAX_INIT_LENGTH);
     m_slider_food_count = make_shared<CSlider<int>>(m_food_count, LEFT_SIDE_X, 500, "Apples:" + to_string(*m_food_count), 1, MAX_FOOD_COUNT);
+    m_slider_wall_crash = make_shared<CSlider<bool>>(m_wall_crash_b, LEFT_SIDE_X, 620, "WallCrash:" + m_on_off_string_arr[static_cast<int>(*m_wall_crash_b)], 0, 1);
+    m_slider_self_crash = make_shared<CSlider<bool>>(m_self_crash_b, LEFT_SIDE_X, 740, "SelfCrash:" + m_on_off_string_arr[static_cast<int>(*m_self_crash_b)], 0, 1);
 }
 
 //initialises all textures if settings are active
@@ -170,6 +193,8 @@ void CSettings::initValues()
     m_volume_game_over = m_settings_values.getVolumeGameOver();
     m_length = m_settings_values.getLength();
     m_food_count = m_settings_values.getFoodCount();
+    m_wall_crash_b = m_settings_values.getWallCrash();
+    m_self_crash_b = m_settings_values.getSelfCrash();
     m_difficulty = m_settings_values.getDifficulty();
 }
 
@@ -194,6 +219,8 @@ void CSettings::draw(RenderTarget& target, RenderStates states) const
     target.draw(*m_slider_length);
     target.draw(*m_slider_difficulty);
     target.draw(*m_slider_food_count);
+    target.draw(*m_slider_wall_crash);
+    target.draw(*m_slider_self_crash);
 
     target.draw(m_difficulty_sprite);
     target.draw(m_volume_sprite);

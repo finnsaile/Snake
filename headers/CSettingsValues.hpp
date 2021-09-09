@@ -16,6 +16,8 @@ class CSettingsValues
         int* getVolumeGameOver();
         int* getLength();
         int* getFoodCount();
+        bool* getWallCrash();
+        bool* getSelfCrash();
         Difficulty* getDifficulty();
 
         void setSettings();
@@ -34,5 +36,7 @@ class CSettingsValues
         int m_volume_game_over;
         int m_length;
         int m_food_count;
+        bool m_wall_crash_b;
+        bool m_self_crash_b;
         Difficulty m_difficulty;
 };

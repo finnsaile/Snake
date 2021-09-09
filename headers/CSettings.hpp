@@ -32,6 +32,8 @@ class CSettings : public sf::Drawable
         int* m_volume_game_over;
         int* m_length;
         int* m_food_count;
+        bool* m_wall_crash_b;
+        bool* m_self_crash_b;
         Difficulty* m_difficulty;
 
         CResources& m_resource;
@@ -53,10 +55,12 @@ class CSettings : public sf::Drawable
         //rectangles to save button bounds
         sf::FloatRect m_menu_bounds;
 
-        std::string difficulty_string_arr[5] = {"Easy", "Medium", "Hard", "Extreme", "Impossible"};
+        std::string m_difficulty_string_arr[5] = {"Easy", "Medium", "Hard", "Extreme", "Impossible"};
+        std::string m_on_off_string_arr[2] = {"Off", "On"};
 
         //slider shared pointers
         std::shared_ptr<CSlider<int>> m_active_slider_int = nullptr;
+        std::shared_ptr<CSlider<bool>> m_active_slider_bool = nullptr;
         std::shared_ptr<CSlider<Difficulty>> m_active_slider_diff = nullptr;
         std::shared_ptr<CSlider<int>> m_slider_music;
         std::shared_ptr<CSlider<int>> m_slider_eat;
@@ -64,6 +68,8 @@ class CSettings : public sf::Drawable
         std::shared_ptr<CSlider<int>> m_slider_game_over;
         std::shared_ptr<CSlider<int>> m_slider_length;
         std::shared_ptr<CSlider<int>> m_slider_food_count;
+        std::shared_ptr<CSlider<bool>> m_slider_wall_crash;
+        std::shared_ptr<CSlider<bool>> m_slider_self_crash;
         std::shared_ptr<CSlider<Difficulty>> m_slider_difficulty;
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
