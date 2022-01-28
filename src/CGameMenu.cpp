@@ -7,7 +7,8 @@ using namespace std;
 
 CGameMenu::CGameMenu(CGame* game, Texture& menu_texture, Texture& button_one_texture, Texture& button_two_texture, int button_one_y, int button_two_y, int menu_y) : 
 m_game_instance(game),
-m_resource(CResources::getInstance())
+m_resource(CResources::getInstance()),
+m_settings_values(CSettingsValues::getInstance())
 {   
     //initialise all 3 textures and get bounds from buttons
     initButton(m_game_menu_sprite, menu_texture, Vector2f(POSITION_Y, menu_y));
@@ -16,7 +17,7 @@ m_resource(CResources::getInstance())
     
     //initialise click sound
     m_click_sound.setBuffer(m_resource.m_click_buffer);
-    m_click_sound.setVolume(m_settings.getVolumeClick());  
+    m_click_sound.setVolume(*m_settings_values.getVolumeClick());  
 }
 
 CGameMenu::~CGameMenu()

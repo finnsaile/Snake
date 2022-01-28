@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "headerEnum.hpp"
 #include "CGame.hpp"
-#include "CSettings.hpp"
+#include "CSettingsValues.hpp"
 #include "CResources.hpp"
 
 class CGameMenu : public sf::Drawable
@@ -13,7 +13,7 @@ class CGameMenu : public sf::Drawable
         WindowInstance gameMenuTick(sf::RenderWindow&);
     protected:
         CResources& m_resource;
-        CSettings m_settings;
+        CSettingsValues& m_settings_values;
     private:
         sf::Sprite m_game_menu_sprite;
         sf::Sprite m_button_one_sprite;

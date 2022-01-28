@@ -5,42 +5,31 @@
 #include <fstream>
 #include "CCounter.hpp"
 #include "CNode.hpp"
-#include "CSettings.hpp"
 #include "CResources.hpp"
+#include "CSettingsValues.hpp"
 
 //food class to create food
 class CFood : public sf::Drawable
 {
     public:
-        CFood(Difficulty);
+        CFood(Difficulty, CNode*, std::vector<CFood>&);
         ~CFood();
         //gotEaten to relocate food
-        void gotEaten(CNode*);
+        void gotEaten(CNode*, std::vector<CFood>&);
         //returnRect to get bounds of food
-        sf::FloatRect returnRect();
+        sf::FloatRect getFoodBounds();
     private:
         int m_pos_x;
         int m_pos_y;
 
-        CResources& m_resource;
-        
-        CSettings m_settings;
-
-        CCounter m_counter;
-        CCounter m_highscore;
+        CResources& m_resource;    
+        CSettingsValues& m_settings_values;
 
         sf::Sprite m_food_sprite;
         sf::Sound m_crunch_sound;
 
-        unsigned int m_highscore_easy;
-        unsigned int m_highscore_medium;
-        unsigned int m_highscore_hard;
-        unsigned int m_highscore_extreme;
-        unsigned int m_highscore_impossible;
-
         Difficulty m_difficulty;
         
-        unsigned int initHighscore(Difficulty);
-        void setRandCoordinates();
+        void setRandCoordinates(CNode* head, std::vector<CFood>&);
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

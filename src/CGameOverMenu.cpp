@@ -5,7 +5,7 @@ CGameMenu::CGameMenu(game, menu_texture, button_one_texture, button_two_texture,
 {
     //set game over sound properties
     m_game_over_sound.setBuffer(m_resource.m_game_over_buffer);
-    m_game_over_sound.setVolume(m_settings.getVolumeGameOver());
+    m_game_over_sound.setVolume(*m_settings_values.getVolumeGameOver());
     m_game_over_sound.play();
 }
 

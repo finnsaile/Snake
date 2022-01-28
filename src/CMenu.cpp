@@ -7,7 +7,8 @@ using namespace sf;
 CMenu::CMenu():
 m_my_black(0, 0, 0, 200), 
 m_my_green(0, 255, 0, 200),
-m_resource(CResources::getInstance())
+m_resource(CResources::getInstance()),
+m_settings_values(CSettingsValues::getInstance())
 {
     initTextures();
 }
@@ -80,7 +81,7 @@ void CMenu::initTextures()
     m_quit_bound = initButton(m_quit_sprite, m_resource.m_quit_texture, Vector2f(BUTTON_X, 860));
 
     m_click_sound.setBuffer(m_resource.m_click_buffer);
-    m_click_sound.setVolume(m_settings.getVolumeClick());
+    m_click_sound.setVolume(*m_settings_values.getVolumeClick());
 }
 
 //used to initialise a button with a texture, position and origin

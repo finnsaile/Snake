@@ -1,28 +1,35 @@
 #include "../headers/CSettings.hpp"
-
+#include <iostream>
 #define LEFT_SIDE_X 300
 #define RIGHT_SIDE_X 700
+#define MAX_INIT_LENGTH (12 * 13)
+#define MAX_FOOD_COUNT 10
 
 using namespace std;
 using namespace sf;
 
-CSettings::CSettings(bool initBool) : 
-m_active_settings_b(initBool),
-m_resource(CResources::getInstance())
+CSettings::CSettings() : 
+m_resource(CResources::getInstance()),
+m_settings_values(CSettingsValues::getInstance())
 {
     //read settings from file and write them to member variables
-    getSettings();
+    m_settings_values.getSettings();
+    initValues();
     //initialise textures (only if object is an active settings instance)
     initTextures();
 }
 
 //destructor
 CSettings::~CSettings()
-{}
+{
+    m_settings_values.setSettings();
+}
 
 WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
 {
     Event event;
+    static bool wait = true;
+    static int b = 0;
     while(renderWindow.pollEvent(event))
     {
         switch(event.type)
@@ -34,67 +41,60 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
             case Event::KeyPressed:
                 switch(event.key.code)
                 {
-                    case Keyboard::Escape: this->setSettings(); return Menu; break;
+                    case Keyboard::Escape: return Menu; break;
                     default: break;
                 }
                 break;
-            
+
             //mouse press event
             case Event::MouseButtonPressed:
                 if(event.mouseButton.button == Mouse::Left)
                 {
                     //get coordinates of mouse press
                     Vector2i cords = Mouse::getPosition(renderWindow);
-                    //check collition between mouse coordinates and button bounds
-                    if(m_difficulty_easy_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Easy;
-                    }
-                    else if(m_difficulty_medium_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Medium;
-                    }
-                    else if(m_difficulty_hard_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Hard;
-                    }
-                    else if(m_difficulty_extreme_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Extreme;
-                    }
-                    else if(m_difficulty_impossible_bounds.contains(cords.x, cords.y)) 
-                    {
-                        m_click_sound.play(); 
-                        m_difficulty = Impossible;
-                    } 
+
                     //compare click position with slider dot bounds and set m_active_slider accordingly
-                    else if(m_slider_music->getSliderBounds().contains(cords.x, cords.y))
+                    if(m_slider_music->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        m_active_slider = m_slider_music;          
+                        m_active_slider_int = m_slider_music;          
                     }
                     else if(m_slider_eat->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        m_active_slider = m_slider_eat;   
-                            
+                        m_active_slider_int = m_slider_eat;   
                     }
                     else if(m_slider_game_over->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        m_active_slider = m_slider_game_over;         
+                        m_active_slider_int = m_slider_game_over;         
                     }
                     else if(m_slider_click->getSliderBounds().contains(cords.x, cords.y))
                     {
-                        m_active_slider = m_slider_click;     
+                        m_active_slider_int = m_slider_click;     
+                    }
+                    else if(m_slider_length->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_int = m_slider_length;     
+                    }
+                    else if(m_slider_food_count->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_int = m_slider_food_count;     
+                    }
+                    else if(m_slider_wall_crash->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_bool = m_slider_wall_crash;     
+                    }
+                    else if(m_slider_self_crash->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_bool = m_slider_self_crash;     
+                    }
+                    else if(m_slider_difficulty->getSliderBounds().contains(cords.x, cords.y))
+                    {
+                        m_active_slider_diff = m_slider_difficulty;     
                     }
                     else if(m_menu_bounds.contains(cords.x, cords.y)) 
                     {
                         //play click sound, save settings, wait and return Menu
                         m_click_sound.play(); 
-                        this->setSettings();
-                        sleep(milliseconds(LEFT_SIDE_X)); 
+                        sleep(milliseconds(300)); 
                         return Menu;
                     }
                 }
@@ -103,8 +103,16 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
             case Event::MouseButtonReleased:
                 //if left mousebutton is released and 
                 if(event.mouseButton.button == Mouse::Left)
-                    if(m_active_slider != nullptr)
-                        m_active_slider = nullptr;
+                {
+                    
+                    if(m_active_slider_int != nullptr)
+                        m_active_slider_int = nullptr; 
+                    else if(m_active_slider_diff != nullptr)
+                        m_active_slider_diff = nullptr;
+                    else if(m_active_slider_bool != nullptr)
+                        m_active_slider_bool = nullptr;
+                }
+
                 break;
 
             default: break;
@@ -115,83 +123,79 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
     return Settings;
 }
 
-//write the settings to output file using the values from class members
-void CSettings::setSettings()
-{
-    ofstream output;
-    output.open(m_resource.DATA_PATH + "settings.txt");
-    output << "VolumeMusic{" << m_volume_music << "}\n";
-    output << "VolumeEat{" << m_volume_eat << "}\n";
-    output << "VolumeClick{" << m_volume_click << "}\n";
-    output << "VolumeGameOver{" << m_volume_game_over << "}\n";
-    output << "Difficulty{" << m_difficulty << "}\n";
-    output.close();
-}
-
-//retrieves settings from text file and assigns the values to the variables
-void CSettings::getSettings()
-{
-    int arr[5], fst, lst;
-    string tempString;
-    ifstream input;
-    input.open(m_resource.DATA_PATH + "settings.txt");
-
-    //loop for retrieving values and writing them to temporary array
-    for(int i = 0; i < 5; i++)
-    {
-        getline(input, tempString);
-        //value is enclosed in curly brackets e.g. {20}
-        fst = tempString.find("{");
-        lst = tempString.find("}");
-        //create substring only containing the value, convert it and write it to array
-        arr[i] = stoi(tempString.substr(fst + 1, lst - fst));
-    }
-    //initialise all values with values from array
-    m_volume_music = arr[0];
-    m_volume_eat = arr[1];
-    m_volume_click = arr[2];
-    m_volume_game_over = arr[3];
-    m_difficulty = static_cast<Difficulty>(arr[4]);
-
-    input.close();
-}
 
 //moves the slider that is currently active to the x cursor position
 void CSettings::moveSlider(const RenderWindow& renderWindow)
 {
-    if(m_active_slider != nullptr)
+    if(m_active_slider_int != nullptr)
     {
-        m_active_slider->moveSlider(Mouse::getPosition(renderWindow).x);
+        if(m_active_slider_int->moveSlider(Mouse::getPosition(renderWindow).x))
+        {
+            if(m_active_slider_int == m_slider_length)
+                m_active_slider_int->setSliderLabel("Length:" + to_string(*m_length));
+            else if(m_active_slider_int == m_slider_food_count)
+                m_active_slider_int->setSliderLabel("Apples:" + to_string(*m_food_count));
+        }
+        
+    }
+    else if(m_active_slider_diff != nullptr)
+    {
+        if(m_active_slider_diff->moveSlider(Mouse::getPosition(renderWindow).x))
+            //set the slider name texture to the corresponding texture from the texture array according to m_difficulty only 
+            m_active_slider_diff->setSliderLabel(m_difficulty_string_arr[static_cast<int>(*m_difficulty)]);
+    }
+    else if(m_active_slider_bool != nullptr)
+    {
+        if(m_active_slider_bool->moveSlider(Mouse::getPosition(renderWindow).x))
+        {
+            if(m_active_slider_bool == m_slider_wall_crash)
+                m_active_slider_bool->setSliderLabel("WallCrash:" + m_on_off_string_arr[static_cast<int>(*m_wall_crash_b)]);
+            else if(m_active_slider_bool == m_slider_self_crash)
+                m_active_slider_bool->setSliderLabel("SelfCrash:" + m_on_off_string_arr[static_cast<int>(*m_self_crash_b)]);
+            
+        }
     }
 }
 
+//initialise all sliders
 void CSettings::initSliders()
 {
-    m_slider_music = make_shared<CSlider>(&m_volume_music, RIGHT_SIDE_X, 260, m_resource.m_slider_music_volume);
-    m_slider_eat = make_shared<CSlider>(&m_volume_eat, RIGHT_SIDE_X, 380, m_resource.m_slider_eat_volume);
-    m_slider_game_over = make_shared<CSlider>(&m_volume_game_over, RIGHT_SIDE_X, 500, m_resource.m_slider_lost_volume);
-    m_slider_click = make_shared<CSlider>(&m_volume_click, RIGHT_SIDE_X, 620, m_resource.m_slider_click_volume);
+    m_slider_music = make_shared<CSlider<int>>(m_volume_music, RIGHT_SIDE_X, 260, "Music");
+    m_slider_eat = make_shared<CSlider<int>>(m_volume_eat, RIGHT_SIDE_X, 380, "Eat");
+    m_slider_game_over = make_shared<CSlider<int>>(m_volume_game_over, RIGHT_SIDE_X, 500, "Lost");
+    m_slider_click = make_shared<CSlider<int>>(m_volume_click, RIGHT_SIDE_X, 620, "Click");
+    m_slider_difficulty = make_shared<CSlider<Difficulty>>(m_difficulty, LEFT_SIDE_X, 260, m_difficulty_string_arr[static_cast<int>(*m_difficulty)], 0, 4);
+    m_slider_length = make_shared<CSlider<int>>(m_length, LEFT_SIDE_X, 380, "Length:" + to_string(*m_length), 2, MAX_INIT_LENGTH);
+    m_slider_food_count = make_shared<CSlider<int>>(m_food_count, LEFT_SIDE_X, 500, "Apples:" + to_string(*m_food_count), 1, MAX_FOOD_COUNT);
+    m_slider_wall_crash = make_shared<CSlider<bool>>(m_wall_crash_b, LEFT_SIDE_X, 620, "WallCrash:" + m_on_off_string_arr[static_cast<int>(*m_wall_crash_b)], 0, 1);
+    m_slider_self_crash = make_shared<CSlider<bool>>(m_self_crash_b, LEFT_SIDE_X, 740, "SelfCrash:" + m_on_off_string_arr[static_cast<int>(*m_self_crash_b)], 0, 1);
 }
 
 //initialises all textures if settings are active
 void CSettings::initTextures()
 {
-    if(m_active_settings_b)
-    {
-        m_difficulty_easy_bounds = initButton(m_difficulty_easy_sprite, m_resource.m_difficulty_easy_texture, Vector2f(LEFT_SIDE_X, 260));
-        m_difficulty_medium_bounds = initButton(m_difficulty_medium_sprite, m_resource.m_difficulty_medium_texture, Vector2f(LEFT_SIDE_X, 380));
-        m_difficulty_hard_bounds = initButton(m_difficulty_hard_sprite, m_resource.m_difficulty_hard_texture, Vector2f(LEFT_SIDE_X, 500));
-        m_difficulty_extreme_bounds = initButton(m_difficulty_extreme_sprite, m_resource.m_difficulty_extreme_texture, Vector2f(LEFT_SIDE_X, 620));
-        m_difficulty_impossible_bounds = initButton(m_difficulty_impossible_sprite, m_resource.m_difficulty_impossible_texture, Vector2f(LEFT_SIDE_X, 740));
         m_menu_bounds = initButton(m_menu_sprite, m_resource.m_menu_texture, Vector2f(500, 880));
         initButton(m_difficulty_sprite, m_resource.m_difficulty_texture, Vector2f(LEFT_SIDE_X, 160));
         initButton(m_volume_sprite, m_resource.m_volume_texture, Vector2f(RIGHT_SIDE_X, 160));
         //set sound source and volume for click sound
         m_click_sound.setBuffer(m_resource.m_click_buffer);
-        m_click_sound.setVolume(m_volume_click);
+        m_click_sound.setVolume(*m_volume_click);
         //initialise sliders
         initSliders();
-    }
+        
+}
+
+void CSettings::initValues()
+{
+    m_volume_music = m_settings_values.getVolumeMusic();
+    m_volume_click = m_settings_values.getVolumeClick();
+    m_volume_eat = m_settings_values.getVolumeEat();
+    m_volume_game_over = m_settings_values.getVolumeGameOver();
+    m_length = m_settings_values.getLength();
+    m_food_count = m_settings_values.getFoodCount();
+    m_wall_crash_b = m_settings_values.getWallCrash();
+    m_self_crash_b = m_settings_values.getSelfCrash();
+    m_difficulty = m_settings_values.getDifficulty();
 }
 
 //used to initialise a button with a texture, position and origin
@@ -205,43 +209,19 @@ FloatRect CSettings::initButton(Sprite& sprite, Texture& texture, Vector2f pos)
     return sprite.getGlobalBounds();
 }
 
-int CSettings::getVolumeMusic() const 
-{
-    return this->m_volume_music;
-}
-
-int CSettings::getVolumeEat() const
-{
-    return this->m_volume_eat;
-}
-
-int CSettings::getVolumeClick() const
-{
-    return this->m_volume_click;
-}
-
-int CSettings::getVolumeGameOver() const
-{
-    return this->m_volume_game_over;
-}
-
-Difficulty CSettings::getDifficulty() const
-{
-    return this->m_difficulty;
-}
-
 //draws all the sprites, buttons and sliders
 void CSettings::draw(RenderTarget& target, RenderStates states) const
 {
-    target.draw(m_difficulty_easy_sprite);
-    target.draw(m_difficulty_medium_sprite);
-    target.draw(m_difficulty_hard_sprite);
-    target.draw(m_difficulty_extreme_sprite);
-    target.draw(m_difficulty_impossible_sprite);
     target.draw(*m_slider_music);
     target.draw(*m_slider_eat);
     target.draw(*m_slider_click);
     target.draw(*m_slider_game_over);
+    target.draw(*m_slider_length);
+    target.draw(*m_slider_difficulty);
+    target.draw(*m_slider_food_count);
+    target.draw(*m_slider_wall_crash);
+    target.draw(*m_slider_self_crash);
+
     target.draw(m_difficulty_sprite);
     target.draw(m_volume_sprite);
     target.draw(m_menu_sprite);

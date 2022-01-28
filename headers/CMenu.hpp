@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include "headerEnum.hpp"
-#include "CSettings.hpp"
+#include "CSettingsValues.hpp"
 #include "CResources.hpp"
 
 class CMenu : public sf::Drawable
@@ -14,7 +14,7 @@ class CMenu : public sf::Drawable
         sf::FloatRect initButton(sf::Sprite&, sf::Texture&, sf::Vector2f);
         void initTextures();
 
-        CSettings m_settings;
+        CSettingsValues& m_settings_values;
 
         CResources& m_resource;
 
