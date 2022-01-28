@@ -5,7 +5,10 @@
 CResources CResources::m_instance;
 
 CResources::CResources() :
-DATA_PATH("/Users/finnsaile/Documents/GitHub/Snake/resources/")
+/*
+!!!CHANGE DATA_PATH to absolute file path of resource folder or run programm from main Snake folder!!!
+*/
+DATA_PATH("resources/")
 {
     //snake head tectures
     m_head_w.loadFromFile(DATA_PATH + "Snake/SnakeHeadW.png");

@@ -81,7 +81,6 @@ void CSettingsValues::getSettings()
     m_length = arr[4];
     m_food_count = arr[5];
     m_wall_crash_b = static_cast<bool>(arr[6]);
-    cout << arr[7] << endl;
     m_self_crash_b = static_cast<bool>(arr[7]);
     m_difficulty = static_cast<Difficulty>(arr[8]);
 

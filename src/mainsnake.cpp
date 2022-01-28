@@ -7,7 +7,6 @@
 
 #ifdef TODO_LIST
 #warning TODO Music Player
-#warning TODO Fun Mode/Toggle Wall And Self Crash
 #endif
 
 
