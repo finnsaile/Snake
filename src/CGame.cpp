@@ -47,8 +47,8 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
     //chang bool to determine if menu should be opened
     m_new_instance = Game;
     //eventloop
-     if(m_snake->getChangedThisTick() == false)
-     {
+    if(m_snake->getChangedThisTick() == false)
+    {
         Event event;
         while(renderWindow.pollEvent(event))
         {
@@ -60,7 +60,7 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
                 
                 //determines the correct key press
                 case Event::KeyPressed:
-                         switch(event.key.code)
+                            switch(event.key.code)
                         {
                             //W A S D for movement. Can't go in opposite direction
                             case Keyboard::W: if (m_snake->getState() != S) m_snake->setState(W); break;
@@ -71,29 +71,30 @@ WindowInstance CGame::gameTick(RenderWindow& renderWindow)
                             case Keyboard::Escape:  m_new_instance = BreakMenu; break;
                             default: break;
                         }
-                    //} 
                 default: break;
             }
             break;
         }
-     }
-        //movement tick
-        if (m_clock.getElapsedTime().asSeconds() > m_difficulty_f
-            && m_new_instance == Game)
+    }
+
+    //movement tick
+    if (m_clock.getElapsedTime().asSeconds() > m_difficulty_f
+        && m_new_instance == Game)
+    {
+        //if addHead returns true menu is opened
+        if(m_snake->addHead(m_new_instance))
         {
-            //if addHead returns true menu is opened
-            if(m_snake->addHead(m_new_instance))
+            //counter gets increased by one and new coordinates are set
+            if(m_counter.getScore() >= m_highscore.getScore())
             {
-                //counter gets increased by one and new coordinates are set
-                if(m_counter.getScore() >= m_highscore.getScore())
-                {
-                    m_highscore.increaseScore(1);
-                }
-                m_counter.increaseScore(1);
+                m_highscore.increaseScore(1);
             }
-            m_clock.restart();
-            m_snake->setChangedThisTick(false);
+            m_counter.increaseScore(1);
         }
+        m_clock.restart();
+        m_snake->setChangedThisTick(false);
+    }
+
     return m_new_instance;
 }
 
@@ -132,9 +133,6 @@ unsigned int CGame::initHighscore(Difficulty difficulty)
             }
         }
     }
-    //loop for retrieving values and writing them to temporary array
-    
-    
     //assign values from array to respective highscore variables
     m_highscore_easy = arr[0];
     m_highscore_medium = arr[1];
@@ -159,13 +157,13 @@ float CGame::convertDifficulty(Difficulty difficulty)
 {
     switch(difficulty)
     {
-        case Easy: return 0.1;
-        case Medium: return 0.08;
-        case Hard: return 0.06;
-        case Extreme: return 0.04;
-        case Impossible: return 0.02;
+        case Easy: return 0.1; break;
+        case Medium: return 0.08; break;
+        case Hard: return 0.06; break;
+        case Extreme: return 0.04; break;
+        case Impossible: return 0.02; break;
 
-        default: return 0.1;
+        default: return 0.1; break;
     }
 }
 

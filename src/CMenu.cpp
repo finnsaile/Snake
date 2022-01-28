@@ -16,7 +16,7 @@ m_settings_values(CSettingsValues::getInstance())
 //menuTick function
 WindowInstance CMenu::menuTick(RenderWindow& renderWindow)
 {
-    //wait Event to prevent unnecessary memory and cpu usage
+    //wait Event to prevent unnecessary cpu usage
     Event event;
     while(renderWindow.waitEvent(event))
     {
@@ -30,7 +30,7 @@ WindowInstance CMenu::menuTick(RenderWindow& renderWindow)
                 switch(event.key.code)
                 {
                     case Keyboard::Space: return Settings; break;
-                    case Keyboard::Escape:  renderWindow.close(); break;
+                    case Keyboard::Escape: renderWindow.close(); break;
                     default: break;
                 }
                 break;
