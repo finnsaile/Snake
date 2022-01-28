@@ -53,40 +53,36 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                     //get coordinates of mouse press
                     Vector2i cords = Mouse::getPosition(renderWindow);
 
-                    //compare click position with slider dot bounds and set m_active_slider accordingly
-                    if(m_slider_music->getSliderBounds().contains(cords.x, cords.y))
+                    std::shared_ptr<CSlider<int>>* slider_int_array[] = 
                     {
-                        m_active_slider_int = m_slider_music;          
-                    }
-                    else if(m_slider_eat->getSliderBounds().contains(cords.x, cords.y))
+                        &m_slider_music,
+                        &m_slider_eat,
+                        &m_slider_game_over,
+                        &m_slider_click,
+                        &m_slider_length,
+                        &m_slider_food_count
+                    };
+                    
+                    std::shared_ptr<CSlider<bool>>* slider_bool_array[] = 
                     {
-                        m_active_slider_int = m_slider_eat;   
-                    }
-                    else if(m_slider_game_over->getSliderBounds().contains(cords.x, cords.y))
+                        &m_slider_self_crash,
+                        &m_slider_wall_crash
+                    };
+
+                    for(auto sld: slider_int_array)
                     {
-                        m_active_slider_int = m_slider_game_over;         
+                        if(sld->get()->getSliderBounds().contains(cords.x, cords.y))
+                            m_active_slider_int = *sld;
                     }
-                    else if(m_slider_click->getSliderBounds().contains(cords.x, cords.y))
+
+                    for(auto sld: slider_bool_array)
                     {
-                        m_active_slider_int = m_slider_click;     
+                        if(sld->get()->getSliderBounds().contains(cords.x, cords.y))
+                            m_active_slider_bool = *sld;
                     }
-                    else if(m_slider_length->getSliderBounds().contains(cords.x, cords.y))
-                    {
-                        m_active_slider_int = m_slider_length;     
-                    }
-                    else if(m_slider_food_count->getSliderBounds().contains(cords.x, cords.y))
-                    {
-                        m_active_slider_int = m_slider_food_count;     
-                    }
-                    else if(m_slider_wall_crash->getSliderBounds().contains(cords.x, cords.y))
-                    {
-                        m_active_slider_bool = m_slider_wall_crash;     
-                    }
-                    else if(m_slider_self_crash->getSliderBounds().contains(cords.x, cords.y))
-                    {
-                        m_active_slider_bool = m_slider_self_crash;     
-                    }
-                    else if(m_slider_difficulty->getSliderBounds().contains(cords.x, cords.y))
+
+            
+                    if(m_slider_difficulty->getSliderBounds().contains(cords.x, cords.y))
                     {
                         m_active_slider_diff = m_slider_difficulty;     
                     }
@@ -104,13 +100,9 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                 //if left mousebutton is released and 
                 if(event.mouseButton.button == Mouse::Left)
                 {
-                    
-                    if(m_active_slider_int != nullptr)
-                        m_active_slider_int = nullptr; 
-                    else if(m_active_slider_diff != nullptr)
-                        m_active_slider_diff = nullptr;
-                    else if(m_active_slider_bool != nullptr)
-                        m_active_slider_bool = nullptr;
+                    m_active_slider_int = nullptr; 
+                    m_active_slider_diff = nullptr;
+                    m_active_slider_bool = nullptr;
                 }
 
                 break;
@@ -119,7 +111,7 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
         }
         moveSlider(renderWindow);
     }
-    //default returns false so game doesn't start
+    //default returns Settings so game doesn't start
     return Settings;
 }
 
@@ -152,7 +144,6 @@ void CSettings::moveSlider(const RenderWindow& renderWindow)
                 m_active_slider_bool->setSliderLabel("WallCrash:" + m_on_off_string_arr[static_cast<int>(*m_wall_crash_b)]);
             else if(m_active_slider_bool == m_slider_self_crash)
                 m_active_slider_bool->setSliderLabel("SelfCrash:" + m_on_off_string_arr[static_cast<int>(*m_self_crash_b)]);
-            
         }
     }
 }
@@ -182,7 +173,6 @@ void CSettings::initTextures()
         m_click_sound.setVolume(*m_volume_click);
         //initialise sliders
         initSliders();
-        
 }
 
 void CSettings::initValues()
