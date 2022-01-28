@@ -81,7 +81,6 @@ WindowInstance CSettings::settingsTick(RenderWindow& renderWindow)
                             m_active_slider_bool = *sld;
                     }
 
-            
                     if(m_slider_difficulty->getSliderBounds().contains(cords.x, cords.y))
                     {
                         m_active_slider_diff = m_slider_difficulty;     
@@ -127,8 +126,7 @@ void CSettings::moveSlider(const RenderWindow& renderWindow)
                 m_active_slider_int->setSliderLabel("Length:" + to_string(*m_length));
             else if(m_active_slider_int == m_slider_food_count)
                 m_active_slider_int->setSliderLabel("Apples:" + to_string(*m_food_count));
-        }
-        
+        }   
     }
     else if(m_active_slider_diff != nullptr)
     {

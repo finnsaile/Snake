@@ -23,15 +23,15 @@ void CSettingsValues::setSettings()
 {
     ofstream output;
     output.open(m_resource.DATA_PATH + "settings.txt");
-    output << "VolumeMusic{" << m_volume_music << "}\n";
-    output << "VolumeEat{" << m_volume_eat << "}\n";
-    output << "VolumeClick{" << m_volume_click << "}\n";
-    output << "VolumeGameOver{" << m_volume_game_over << "}\n";
-    output << "Length{" << m_length << "}\n";
-    output << "FoodCount{" << m_food_count << "}\n";
-    output << "WallCrash{" << static_cast<int>(m_wall_crash_b) << "}\n";
-    output << "SelfCrash{" << static_cast<int>(m_self_crash_b) << "}\n";
-    output << "Difficulty{" << static_cast<int>(m_difficulty) << "}\n";
+    output << "VolumeMusic{" << m_volume_music << "}\n"
+    << "VolumeEat{" << m_volume_eat << "}\n"
+    << "VolumeClick{" << m_volume_click << "}\n"
+    << "VolumeGameOver{" << m_volume_game_over << "}\n"
+    << "Length{" << m_length << "}\n"
+    << "FoodCount{" << m_food_count << "}\n"
+    << "WallCrash{" << static_cast<int>(m_wall_crash_b) << "}\n"
+    << "SelfCrash{" << static_cast<int>(m_self_crash_b) << "}\n"
+    << "Difficulty{" << static_cast<int>(m_difficulty) << "}\n";
     output.close();
 }
 

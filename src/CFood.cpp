@@ -71,7 +71,7 @@ void CFood::setRandCoordinates(CNode* head, vector<CFood>& food_vec)
         temp = head;
         collition = false;
         //while loop itterates through whole snake
-        while(temp != NULL)
+        while(temp != nullptr)
         {
             //body bound gets set to current node bound
             body_bound = temp->m_node.getGlobalBounds();

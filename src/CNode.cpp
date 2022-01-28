@@ -7,7 +7,7 @@ CNode::CNode(int pos_y, int pos_x, SnakeState snake_state):
 m_node_state(snake_state),
 m_node_pos_y(pos_y),
 m_node_pos_x(pos_x),
-next(NULL),
+next(nullptr),
 m_resource(CResources::getInstance())
 {
     //depeningent on direction of snake reference correct texture
@@ -58,7 +58,7 @@ void CNode::changeTexture(SnakeState snake_state, bool tailBool)
         //if the snake is of size one head == tail. if this is not the case AND the previous node has a different state,
         //meaning that the current node is a curve node, set temp state to prev state so the texture of the tail
         //and the prev node allign 
-        if (prev != NULL) //&& (m_node_state != prev->m_node_state)
+        if (prev != nullptr) //&& (m_node_state != prev->m_node_state)
             temp_state = &prev->m_node_state;
         //else set temp state to the current node state
         else    
