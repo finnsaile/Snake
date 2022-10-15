@@ -42,3 +42,6 @@
 *.txt
 resources/highscore.txt
 resources/settings.txt
+!resources/TexturePaths.txt
+Snake
+build
